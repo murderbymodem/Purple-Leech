@@ -17,6 +17,11 @@ namespace PurpleLeech.Services.Interfaces
         /// </summary>
         event Action<string> CaptureStarted;
 
+        /// <summary>
+        /// Raised on the UI thread with the number of interrupted recordings that were finished on startup
+        /// </summary>
+        event Action<int> RecordingsRecovered;
+
         void AddChannel(string login);
 
         void RemoveChannel(string login);

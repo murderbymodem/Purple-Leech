@@ -224,18 +224,21 @@ namespace PurpleLeech.Services.Services
 
                             cancellationToken.ThrowIfCancellationRequested();
 
+                            if (downloadParams.IsLiveCapture)
+                            {
+                                List<string> liveWarnings = CaptureLive(log, setStatus, setIsIndeterminate, tempDir,
+                                    downloadParams, playlistInfo, quality, out string recordingFile, cancellationToken);
+
+                                FinishRecording(log, setStatus, setProgress, setIsIndeterminate, recordingFile,
+                                    outputFile, disableConversion);
+
+                                return liveWarnings;
+                            }
+
                             VodPlaylist vodPlaylist;
                             CropInfo cropInfo;
                             IEnumerable<string> downloadWarnings;
 
-                            if (downloadParams.IsLiveCapture)
-                            {
-                                cropInfo = new CropInfo(false, false, 0, 0);
-
-                                downloadWarnings = CaptureLive(log, setStatus, setIsIndeterminate, tempDir,
-                                    downloadParams, playlistInfo, quality, out vodPlaylist, cancellationToken);
-                            }
-                            else
                             {
                                 vodPlaylist = GetVodPlaylist(log, tempDir, playlistInfo, quality);
 
@@ -458,11 +461,12 @@ namespace PurpleLeech.Services.Services
             }
         }
 
-        private IEnumerable<string> CaptureLive(Action<string> log, Action<string> setStatus,
+        private List<string> CaptureLive(Action<string> log, Action<string> setStatus,
             Action<bool> setIsIndeterminate, string tempDir, DownloadParameters downloadParams,
             Dictionary<VodQuality, string> playlistInfo, VodQuality selectedQuality,
-            out VodPlaylist vodPlaylist, CancellationToken cancellationToken)
+            out string recordingFile, CancellationToken cancellationToken)
         {
+            LiveRecordingWriter writer = null;
             List<string> warnings = new List<string>();
             HashSet<string> handledParts = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -563,6 +567,15 @@ namespace PurpleLeech.Services.Services
                             warnings.AddRange(DownloadLiveParts(log, newParts, handledParts, cancellationToken));
                         }
 
+                        if (writer == null)
+                        {
+                            writer = LiveRecordingWriter.Create(downloadParams.Folder, downloadParams.Filename,
+                                latest.InitSegment != null);
+                            log(Environment.NewLine + "Recording to '" + writer.Path + "'");
+                        }
+
+                        writer.AppendReady(latest, handledParts, log, warnings);
+
                         if (latest.Count > lastCount)
                         {
                             lastCount = latest.Count;
@@ -611,9 +624,10 @@ namespace PurpleLeech.Services.Services
             finally
             {
                 KeepSystemAwake(false);
+                writer?.Dispose();
             }
 
-            if (latest == null || latest.Count == 0)
+            if (latest == null || latest.Count == 0 || writer == null || writer.AppendedChunks == 0)
             {
                 throw new ApplicationException("No video chunks could be captured!");
             }
@@ -623,7 +637,7 @@ namespace PurpleLeech.Services.Services
             log(Environment.NewLine + Environment.NewLine + "Live capture complete, " + handledParts.Count +
                 " chunks captured.");
 
-            vodPlaylist = latest;
+            recordingFile = writer.Path;
             return warnings;
         }
 
@@ -737,6 +751,27 @@ namespace PurpleLeech.Services.Services
             {
                 // Not critical
             }
+        }
+
+        /// <summary>
+        /// Turns the finished recording into the final video with a lossless stream copy
+        /// </summary>
+        private void FinishRecording(Action<string> log, Action<string> setStatus, Action<double> setProgress,
+            Action<bool> setIsIndeterminate, string recordingFile, string outputFile, bool disableConversion)
+        {
+            CheckOutputDirectory(log, Path.GetDirectoryName(outputFile));
+
+            if (disableConversion)
+            {
+                log(Environment.NewLine + Environment.NewLine + "Moving recording to '" + outputFile + "'");
+                File.Move(recordingFile, outputFile, true);
+                return;
+            }
+
+            _processingService.ConvertVideo(log, setStatus, setProgress, setIsIndeterminate,
+                recordingFile, outputFile, new CropInfo(false, false, 0, 0));
+
+            FileSystem.DeleteFile(recordingFile);
         }
 
         private CropInfo CropVodPlaylist(VodPlaylist vodPlaylist, bool cropStart, bool cropEnd,

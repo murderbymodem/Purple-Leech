@@ -37,6 +37,8 @@ namespace PurpleLeech.Services.Services
         private readonly IFolderService _folderService;
         private readonly IRuntimeDataService _runtimeDataService;
         private readonly ILogService _logService;
+        private readonly IProcessingService _processingService;
+        private bool _recoveryDone;
 
         private readonly Timer _timer;
         private readonly object _settingsLock = new object();
@@ -54,7 +56,8 @@ namespace PurpleLeech.Services.Services
             IFilenameService filenameService,
             IFolderService folderService,
             IRuntimeDataService runtimeDataService,
-            ILogService logService)
+            ILogService logService,
+            IProcessingService processingService)
         {
             _apiService = apiService;
             _downloadService = downloadService;
@@ -63,6 +66,7 @@ namespace PurpleLeech.Services.Services
             _folderService = folderService;
             _runtimeDataService = runtimeDataService;
             _logService = logService;
+            _processingService = processingService;
 
             Channels = new ObservableCollection<MonitoredChannel>();
 
@@ -108,6 +112,8 @@ namespace PurpleLeech.Services.Services
         }
 
         public event Action<string> CaptureStarted;
+
+        public event Action<int> RecordingsRecovered;
 
         #endregion Properties
 
@@ -192,6 +198,13 @@ namespace PurpleLeech.Services.Services
 
             try
             {
+                if (!_recoveryDone)
+                {
+                    // Before any new capture starts, so a leftover can't collide with a new recording
+                    _recoveryDone = true;
+                    RecoverInterruptedRecordings();
+                }
+
                 List<MonitoredChannel> channels = OnUiThread(() => Channels.ToList());
 
                 if (channels.Count == 0 || !_isEnabled)
@@ -263,6 +276,77 @@ namespace PurpleLeech.Services.Services
             finally
             {
                 Interlocked.Exchange(ref _checkRunning, 0);
+            }
+        }
+
+        /// <summary>
+        /// Finishes recordings that were cut off by a crash or power loss. Their content is valid up to the last
+        /// complete chunk, a lossless stream copy turns them into a normal video file.
+        /// </summary>
+        private void RecoverInterruptedRecordings()
+        {
+            string downloadFolder = _preferencesService.CurrentPreferences.DownloadFolder;
+
+            if (string.IsNullOrWhiteSpace(downloadFolder) || !Directory.Exists(downloadFolder))
+            {
+                return;
+            }
+
+            List<string> leftovers = new List<string>();
+
+            try
+            {
+                // The download folder and its channel subfolders
+                foreach (string folder in new[] { downloadFolder }.Concat(Directory.EnumerateDirectories(downloadFolder)))
+                {
+                    leftovers.AddRange(Directory.EnumerateFiles(folder, "*" + LiveRecordingWriter.RecordingMarker + ".*")
+                        .Where(f => f.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase) ||
+                                    f.EndsWith(".ts", StringComparison.OrdinalIgnoreCase)));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logService.LogException(ex);
+                return;
+            }
+
+            int recovered = 0;
+
+            foreach (string recording in leftovers)
+            {
+                try
+                {
+                    string folder = Path.GetDirectoryName(recording);
+                    string name = Path.GetFileName(recording);
+                    name = name.Substring(0, name.LastIndexOf(LiveRecordingWriter.RecordingMarker, StringComparison.OrdinalIgnoreCase));
+
+                    string target = Path.Combine(folder, name + ".mp4");
+
+                    for (int i = 2; File.Exists(target); i++)
+                    {
+                        target = Path.Combine(folder, $"{name} (recovered {i}).mp4");
+                    }
+
+                    _processingService.ConvertVideo(_ => { }, _ => { }, _ => { }, _ => { }, recording, target,
+                        new CropInfo(false, false, 0, 0));
+
+                    File.Delete(recording);
+                    recovered++;
+                }
+                catch (Exception ex)
+                {
+                    // Keep the recording, it is still playable as it is
+                    _logService.LogException(ex);
+                }
+            }
+
+            if (recovered > 0)
+            {
+                OnUiThread(() =>
+                {
+                    RecordingsRecovered?.Invoke(recovered);
+                    return true;
+                });
             }
         }
 

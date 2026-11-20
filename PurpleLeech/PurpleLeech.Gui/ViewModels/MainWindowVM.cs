@@ -87,6 +87,9 @@ namespace PurpleLeech.Gui.ViewModels
 
             // Resolving the monitor here starts it with the application
             channelMonitorService.CaptureStarted += channel => SetNotification($"{channel} is live, recording started");
+            channelMonitorService.RecordingsRecovered += count => SetNotification(count == 1
+                ? "Recovered 1 interrupted recording"
+                : $"Recovered {count} interrupted recordings");
 
             _commandLockObject = new object();
 
