@@ -27,13 +27,13 @@ jobs:
         shell: pwsh
         run: |
           $version = "${{ github.ref_name }}".TrimStart("v")
-          $file = "TwitchLeecher/GlobalAssemblyInfo.cs"
+          $file = "PurpleLeech/GlobalAssemblyInfo.cs"
           (Get-Content $file) -replace 'AssemblyFileVersion\(".*?"\)', "AssemblyFileVersion(""$version"")" | Set-Content $file
           Get-Content $file
 
       - name: Publish
         run: >
-          dotnet publish TwitchLeecher/TwitchLeecher/TwitchLeecher.csproj
+          dotnet publish PurpleLeech/PurpleLeech/PurpleLeech.csproj
           -c Release
           -r win-x64
           --self-contained true

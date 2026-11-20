@@ -1,0 +1,145 @@
+﻿<UserControl x:Class="PurpleLeech.Gui.Views.DownloadsView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:viewModels="clr-namespace:PurpleLeech.Gui.ViewModels"
+             xmlns:avalonia="https://github.com/projektanker/icons.avalonia"
+             xmlns:converters="clr-namespace:PurpleLeech.Gui.Converters"
+             x:DataType="viewModels:DownloadsViewModel">
+    <Design.DataContext>
+        <viewModels:DownloadsViewModel />
+    </Design.DataContext>
+    <UserControl.Resources>
+        <converters:DownloadStateToColorConverter x:Key="DownloadStateToColorConverter" />
+    </UserControl.Resources>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Offset="{Binding ScrollPosition, Mode=TwoWay}">
+        <ItemsControl ItemsSource="{Binding Downloads}" Margin="0,0,0,20">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Margin="20, 20, 20, 0" Padding="10" BorderThickness="1" CornerRadius="5">
+                        <Border.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                <GradientStop Color="{DynamicResource WindowBackgroundGradientTopColor}" Offset="0" />
+                                <GradientStop Color="{DynamicResource WindowBackgroundGradientBottomColor}"
+                                              Offset="1" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <Border Grid.Row="0" BorderThickness="0,0,0,1" Padding="0,0,0,10" Margin="0,0,0,10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding DownloadParams.Video.Title}"
+                                               FontWeight="Bold" TextTrimming="CharacterEllipsis"
+                                               VerticalAlignment="Center" />
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Button Classes="TlMiniButton"
+                                                Command="{Binding $parent[ItemsControl].((viewModels:DownloadsViewModel)DataContext).RetryDownloadCommand}"
+                                                CommandParameter="{Binding Id}"
+                                                Padding="5"
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Stretch"
+                                                IsVisible="{Binding CanRetry}">
+                                            <avalonia:Icon Value="fa-solid fa-arrows-rotate" Width="16" Height="16" />
+                                        </Button>
+                                        <Button CommandParameter="{Binding Id}"
+                                                Margin="5,0,0,0"
+                                                Padding="5"
+                                                VerticalAlignment="Center"
+                                                Command="{Binding $parent[ItemsControl].((viewModels:DownloadsViewModel)DataContext).CancelDownloadCommand}"
+                                                HorizontalAlignment="Stretch">
+                                            <avalonia:Icon Width="16" Height="16" Value="{Binding Icon}" />
+                                        </Button>
+                                        <Button Classes="TlMiniButton"
+                                                Command="{Binding $parent[ItemsControl].((viewModels:DownloadsViewModel)DataContext).ShowLogCommand}"
+                                                CommandParameter="{Binding Id}"
+                                                Margin="5,0,0,0"
+                                                Padding="5"
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Stretch">
+                                            <avalonia:Icon Value="fa-solid fa-file-lines" Width="16" Height="16" />
+                                        </Button>
+                                        <Button Classes="TlMiniButton"
+                                                Command="{Binding $parent[ItemsControl].((viewModels:DownloadsViewModel)DataContext).OpenDownloadFolderCommand}"
+                                                CommandParameter="{Binding Id}"
+                                                Margin="5,0,0,0"
+                                                Padding="5"
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Stretch"
+                                                IsVisible="{Binding IsDone}">
+                                            <avalonia:Icon Value="fa-solid fa-folder-open" Width="16" Height="16" />
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="20" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <Image Grid.Column="0" Source="{Binding DownloadParams.Video.Thumbnail^}"
+                                       VerticalAlignment="Center" MaxWidth="195" MaxHeight="110" Width="195"
+                                       Height="110" Stretch="Uniform" />
+                                <Grid Grid.Column="2" Grid.IsSharedSizeScope="True" VerticalAlignment="Center">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="15" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition SharedSizeGroup="g1" />
+                                        <RowDefinition Height="10" />
+                                        <RowDefinition SharedSizeGroup="g1" />
+                                        <RowDefinition Height="10" />
+                                        <RowDefinition SharedSizeGroup="g1" />
+                                        <RowDefinition Height="10" />
+                                        <RowDefinition SharedSizeGroup="g1" />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Column="0" Grid.Row="0" Text="Status:" FontWeight="Bold" />
+                                    <TextBlock Grid.Column="2" Grid.Row="0" FontWeight="Bold"
+                                               Text="{Binding Status}"
+                                               Foreground="{Binding DownloadState, Converter={StaticResource DownloadStateToColorConverter}}" />
+
+                                    <TextBlock Grid.Column="0" Grid.Row="2" Text="Length:" FontWeight="Bold" />
+                                    <TextBlock Grid.Column="2" Grid.Row="2"
+                                               Text="{Binding DownloadParams.CroppedLengthStr}" />
+
+                                    <TextBlock Grid.Column="0" Grid.Row="4" Text="Quality:" FontWeight="Bold" />
+                                    <TextBlock Grid.Column="2" Grid.Row="4"
+                                               Text="{Binding DownloadParams.SelectedQuality.DisplayString}" />
+
+                                    <TextBlock Grid.Column="0" Grid.Row="6" Text="Recorded:" FontWeight="Bold" />
+                                    <TextBlock Grid.Column="2" Grid.Row="6"
+                                               Text="{Binding DownloadParams.Video.RecordedDate, StringFormat=G}" />
+                                </Grid>
+                            </Grid>
+                            <Border Grid.Row="2" BorderThickness="0,1,0,0" Padding="0,10,0,0" Margin="0,10,0,0">
+                                <Grid Height="26">
+                                    <ProgressBar Value="{Binding Progress, Mode=OneWay}"
+                                                 IsIndeterminate="{Binding IsIndeterminate}" />
+                                    <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center"
+                                               IsVisible="{Binding !IsIndeterminate}">
+                                        <TextBlock.Foreground>
+                                            <SolidColorBrush Color="Black" />
+                                        </TextBlock.Foreground>
+                                        <Run Text="{Binding Progress, Mode=OneWay, StringFormat=N1}" /><Run Text="%" />
+                                    </TextBlock>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </ScrollViewer>
+</UserControl>

@@ -1,0 +1,14 @@
+﻿<UserControl x:Class="PurpleLeech.Gui.Views.WelcomeView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:viewModels="clr-namespace:PurpleLeech.Gui.ViewModels"
+             x:DataType="viewModels:WelcomeViewModel">
+    <Design.DataContext>
+        <viewModels:WelcomeViewModel />
+    </Design.DataContext>
+    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-20,0,0">
+        <TextBlock HorizontalAlignment="Center" FontSize="24" FontWeight="Bold">
+            <Run Text="Welcome to " /><Run Text="{Binding ProductName, Mode=OneTime}" />
+        </TextBlock>
+    </StackPanel>
+</UserControl>

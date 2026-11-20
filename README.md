@@ -12,7 +12,7 @@ Grab the latest `PurpleLeech-vX.Y.Z-win-x64.zip` from the [Releases](https://git
 Requires the [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0).
 
 ```bash
-dotnet publish TwitchLeecher/TwitchLeecher/TwitchLeecher.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish
+dotnet publish PurpleLeech/PurpleLeech/PurpleLeech.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish
 ```
 
 Releases are built automatically by GitHub Actions when a `v*` tag (e.g. `v4.0.0`) is pushed.
