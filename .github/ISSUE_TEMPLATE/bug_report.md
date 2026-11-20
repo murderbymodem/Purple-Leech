@@ -3,7 +3,7 @@ name: Bug report
 about: Create a report to help us improve
 title: ''
 labels: bug
-assignees: schneidermanuel
+assignees: murderbymodem
 
 ---
 
@@ -15,7 +15,7 @@ A clear instruction on what steps someone has to follow to reproduce this issue.
 
 **Information**
 - Twitch VOD URL
-- Twitch Leecher-DX log file
+- Purple Leech log file
 - Download logs
 - Operating System
 

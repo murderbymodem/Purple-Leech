@@ -1,0 +1,26 @@
+﻿<UserControl x:Class="PurpleLeech.Gui.Views.LogView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:viewModels="clr-namespace:PurpleLeech.Gui.ViewModels"
+             x:DataType="viewModels:LogViewModel">
+    <Design.DataContext>
+        <viewModels:LogViewModel />
+    </Design.DataContext>
+
+    <Border Padding="20">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Margin="0, 0, 0, 10" Padding="0,0,0,5" BorderThickness="0,0,0,1">
+                <TextBlock Text="Download Log" FontSize="21.333" FontWeight="Bold" />
+            </Border>
+
+            <Border Grid.Row="1" BorderThickness="1">
+                <TextBox Classes="TlScrollingTextBox" Text="{Binding Download.Log, Mode=OneWay}" />
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

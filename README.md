@@ -1,81 +1,97 @@
-The is a new maintained fork of [Twitch Leecher](https://github.com/Franiac/TwitchLeecher)
-Don't forget to leve a star if you like it!
-<p align="center">
-  <img src="https://github.com/schneidermanuel/TwitchLeecher-Dx/assets/57318033/35f55b28-9970-4c95-89fb-01fac4ad5711" />
-</p>
+# Purple Leech
 
-# Twitch Leecher-DX
-If you are looking for an extremely fast and easy to use Twitch VOD downloader, this is your tool!
+A fast, easy to use VOD downloader for Twitch, with 1440p support and a channel monitor that records broadcasts while they are live, so you keep the original audio.
 
-## Linux Version
-There is an [aur package](https://aur.archlinux.org/packages/twitchleecher-dx) available!
+## What's new in Purple Leech
 
-## Windows Version
-Download the executable [here](https://github.com/schneidermanuel/TwitchLeecher-Dx/releases/download/v3.9.0/twitchleecher-dx-3.9.0-setup.exe)
-- Requires [.net 10.0](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
-
-# Legal Disclaimer
-1. Purpose of the Software
-This software (Twitch Leecher DX) is provided as a technical tool for personal use only. It is intended to facilitate the download of video content from Twitch for offline viewing, archiving, or personal backup purposes (e.g., for creators to save their own broadcasts).
-
-2. User Responsibility
-By using this software, you agree to comply with all applicable copyright laws and the Twitch Terms of Service (ToS). The developer of this software does not encourage, support, or induce any form of copyright infringement or unauthorized distribution of content. You are solely responsible for the legality of the content you download.
-
-3. Access to Restricted Content
-This tool does not bypass or circumvent any digital rights management (DRM) or payment barriers.
-
-Public Content: The tool only accesses publicly available video fragments.
-
-Subscription-Only Content: Access to subscriber-only VODs requires a valid user-authorized token. This software only facilitates the download if the user already possesses the legal right to access said content through their own active subscription.
-
-4. No Affiliation
-This project is an independent open-source "fork" and is not affiliated with, authorized, maintained, sponsored, or endorsed by Twitch Interactive, Inc., Amazon.com, Inc., or any of their affiliates or subsidiaries. "Twitch" is a registered trademark of Twitch Interactive, Inc.
-
-5. Limitation of Liability
-The software is provided "as is", without warranty of any kind. The developer shall not be liable for any claims, damages, or other liabilities, including account suspensions or legal actions resulting from the use of this tool.
-
-## What is the difference compared to other VOD downloaders?
-Nearly all of the well known VOD downloaders execute the download process via FFMPEG's integrated download capabilities. However, this is extremely slow. The download speed rarely exceeds 1.5Mbit even if the internet connection is 100 times faster. Twitch Leecher-DX does not use FFMPEG for download tasks at all. It downloads thousands of small video chunks in parallel while using all of the available bandwidth of your internet connection. As soon as all video chunks are downloaded, FFMPEG is only used to merge those chunks together in order to create a single video file again.
+- **1440p downloads**: Twitch hides the 1440p (HEVC) source quality of enhanced broadcasts from its VOD playlists. Purple Leech finds it anyway and lists it as `Source (2560x1440, HEVC)`, next to the usual qualities.
+- **Channel monitor**: add the channels you care about and Purple Leech checks every 15 seconds whether they are live. When one goes live, its VOD is recorded automatically.
+- **Live capture before muting**: the VOD is downloaded while the stream is running, before Twitch's copyright check mutes parts of it and deletes the original audio. The download is finished seconds after the stream ends.
+- **Muted chunk fallback**: when the original version of a chunk is gone, Purple Leech downloads the muted version instead of leaving a gap in the video.
+- **Codec aware quality list**: qualities show their codec when it is not H.264, e.g. `HEVC` or `AV1`. A new `1440p` option is available for the default download quality, and `Source` always picks the best available quality.
+- **Keeps your PC awake** while a live capture is running (Windows).
+- **Self-contained Windows build**: a single `PurpleLeech.exe`, no .NET installation needed.
 
 ## Features
+
 - Very easy to use, no manual needed
-- Intuitive and stylish GUI
-- Up to 20 times faster download speed compared to direct download with FFMPEG
-- Browse your past broadcasts, uploads and highlights within the application
-- Search channels, VOD urls and VOD IDs
-- Sub-Only video download support
-- Audio-Only download support
-- Time Selection for VOD downloads
+- Downloads thousands of video chunks in parallel, using all of your bandwidth
+- Browse past broadcasts, uploads and highlights within the application
+- Search by channel, VOD URL or VOD ID
+- Sub-only VOD downloads (with your own subscription)
+- Audio-only downloads
+- Download only a time range of a VOD
 - Queue multiple downloads
-- Specify default search parameters
-- Specify default download quality
-- Specify default download folders
-- Specify a filename template with wildcards for your downloads
-- Developed by an experienced Software Engineer
-- Free and Open Source
-- Actively maintained
-- Modern .net 6.0 Framework
-- Save favorite search parameter as preset
-- Download VOD's that might are unavailable on twitch due to missing chunk data
-  
+- Default search parameters, download quality, download folder and filename template with wildcards
+- Save favorite channels and search presets
+- Downloads VODs that are partly unavailable due to missing chunks
+- Free and open source, built on .NET 10
+
+## Download (Windows)
+
+Grab the latest `PurpleLeech-vX.Y.Z-win-x64.zip` from the [Releases](https://github.com/murderbymodem/Purple-Leech/releases) page, unzip it anywhere and run `PurpleLeech.exe`.
+
+- Windows 10/11, 64 bit
+- No .NET installation required
+- Keep `ffmpeg.exe` in the same folder as `PurpleLeech.exe`
+
+## Using the channel monitor
+
+1. Log in with your Twitch account (needed to check which channels are live).
+2. Open **Monitor** in the title bar and add channels by name or URL.
+3. Leave Purple Leech running. When a channel goes live, a recording appears under **Downloads** and finishes on its own once the stream ends.
+
+Good to know:
+
+- Purple Leech has to stay open for the monitor to work.
+- The recording always starts from the beginning of the VOD, even if Purple Leech notices the stream a little late.
+- Channels that don't save their broadcasts as VODs can't be recorded this way.
+- Recordings use your default download quality, folder and filename template from the preferences.
+
+## How it is so fast
+
+Most VOD downloaders let FFmpeg download the video, which rarely gets anywhere near the speed of your internet connection. Purple Leech doesn't use FFmpeg for downloading at all. It downloads the small video chunks of a VOD in parallel, then FFmpeg only merges them into a single video file.
+
+## Building from source
+
+Requires the [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0).
+
+```bash
+dotnet publish PurpleLeech/PurpleLeech/PurpleLeech.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish
+```
+
+Releases are built automatically by GitHub Actions when a `v*` tag (e.g. `v4.0.0`) is pushed.
+
+On Linux the app also builds and runs (`-r linux-x64`) and uses the `ffmpeg` found on your `PATH`, but Windows is the supported platform for now.
+
 ## Support & Issues
 
-If you have any problem or wish a feature for Twitch Leecher-DX, feel free to open an issue on this page!
-> **IMPORTANT:** Help me be efficient, please! I am developing Twitch Leecher in my free time for no money. Contribute to the project by posting complete, structured and helpful issues which I can reproduce quickly without asking for missing information. When creating a new issue please follow the below checklist:
+If you have a problem or a feature request, [open an issue](https://github.com/murderbymodem/Purple-Leech/issues). Please include:
 
-- Windows Insider Builds are NOT supported!
-- Upgrade to the latest version of Twitch Leecher DX and .net 6.0 runtime
-- Provide the version of Twitch Leecher-DX you are using
-- Provide as much information about the VOD as possible (Url, Channel, ID)
-- Provide information about your operating system (e.g. Windows 10 64 Bit)
-- Try to describe the problem as detailed as possible, I cannot read your mind ;)
-- Is there any additional information about the issue that might be interesting for me? Write it down!
-- When you have a problem with a download, provide the download log created by Twitch Leecher (see screenshot below)
-![2023-09-17 10 19 42](https://github.com/schneidermanuel/TwitchLeecher-Dx/assets/57318033/1472d989-4df9-44c6-9ccb-4519345d2234)
+- The version of Purple Leech you are using
+- The VOD URL, channel or ID
+- Your operating system (e.g. Windows 11 64 bit)
+- A description of the problem
+- For download problems, the download log (the log button on the download)
 
-# Donate
+## Legal Disclaimer
 
-If you wan't to support me and the development of this project, please consider donating! [Donate](https://www.tipeeestream.com/brainyxs/donation)
+1. **Purpose of the software.** Purple Leech is a technical tool for personal use only. It is intended for downloading video content for offline viewing, archiving or personal backups (e.g. creators saving their own broadcasts).
 
-## LICENSE
-[MIT License](https://github.com/schneidermanuel/TwitchLeecher-DX/blob/master/LICENSE)
+2. **User responsibility.** By using this software you agree to comply with all applicable copyright laws and the Twitch Terms of Service. The developer does not encourage, support or induce copyright infringement or unauthorized distribution of content. You are solely responsible for the legality of the content you download.
+
+3. **Access to restricted content.** This tool does not bypass or circumvent any digital rights management (DRM) or payment barriers. It only accesses publicly available video fragments. Sub-only VODs require a valid user-authorized token and can only be downloaded if you already have access to them through your own active subscription.
+
+4. **No affiliation.** Purple Leech is an independent open-source project and is not affiliated with, authorized, maintained, sponsored or endorsed by Twitch Interactive, Inc., Amazon.com, Inc., or any of their affiliates or subsidiaries. "Twitch" is a registered trademark of Twitch Interactive, Inc.
+
+5. **Limitation of liability.** The software is provided "as is", without warranty of any kind. The developer shall not be liable for any claims, damages or other liabilities, including account suspensions or legal actions resulting from the use of this tool.
+
+## Credits
+
+Claudecoded by murderbymodem.
+
+Purple Leech is based on TwitchLeecher-DX by Manuel "Brainy" Schneider, which is a fork of Twitch Leecher by Dominik "Franiac" Rebitzer.
+
+## License
+
+[MIT License](LICENSE)

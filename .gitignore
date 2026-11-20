@@ -331,5 +331,5 @@ ASALocalRun/
 .mfractor/
 
 # Custom ignored files
-/TwitchLeecher.Setup.Publish
-/TwitchLeecher.Setup/Libraries/ResourceHacker.ini
+/PurpleLeech.Setup.Publish
+/PurpleLeech.Setup/Libraries/ResourceHacker.ini
