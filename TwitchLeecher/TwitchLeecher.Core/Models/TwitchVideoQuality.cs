@@ -13,7 +13,7 @@ namespace TwitchLeecher.Core.Models
 
         #region Constructors
 
-        public TwitchVideoQuality(string id, string name, string resolution = null)
+        public TwitchVideoQuality(string id, string name, string resolution = null, string codecs = null)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
@@ -25,7 +25,7 @@ namespace TwitchLeecher.Core.Models
                 throw new ArgumentNullException(nameof(name));
             }
 
-            Initialize(id, name, resolution);
+            Initialize(id, name, resolution, codecs);
         }
 
         #endregion Constructors
@@ -40,6 +40,10 @@ namespace TwitchLeecher.Core.Models
 
         public int VerticalResolution { get; private set; }
 
+        public string Codecs { get; private set; }
+
+        public string VideoCodec { get; private set; }
+
         public string DisplayString { get; private set; }
 
         public bool IsSource { get; private set; }
@@ -50,17 +54,26 @@ namespace TwitchLeecher.Core.Models
 
         #region Methods
 
-        private void Initialize(string id, string name, string resolution)
+        private void Initialize(string id, string name, string resolution, string codecs)
         {
             Id = id;
             Name = name;
             Resolution = resolution;
+            Codecs = codecs;
+            VideoCodec = GetVideoCodec(codecs);
 
             string displayString = Name;
 
             if (!string.IsNullOrWhiteSpace(resolution))
             {
-                displayString += $" ({resolution})";
+                displayString += $" ({resolution}";
+
+                if (VideoCodec != null && VideoCodec != "H.264")
+                {
+                    displayString += $", {VideoCodec}";
+                }
+
+                displayString += ")";
             }
 
             DisplayString = displayString;
@@ -80,7 +93,37 @@ namespace TwitchLeecher.Core.Models
 
             int start = resolution.IndexOf("x") + 1;
 
-            return int.Parse(resolution.Substring(start, resolution.Length - start));
+            return int.TryParse(resolution.Substring(start, resolution.Length - start), out int res) ? res : 0;
+        }
+
+        private static string GetVideoCodec(string codecs)
+        {
+            if (string.IsNullOrWhiteSpace(codecs))
+            {
+                return null;
+            }
+
+            foreach (string codec in codecs.Split(','))
+            {
+                string c = codec.Trim().ToLowerInvariant();
+
+                if (c.StartsWith("avc1") || c.StartsWith("avc3"))
+                {
+                    return "H.264";
+                }
+
+                if (c.StartsWith("hvc1") || c.StartsWith("hev1"))
+                {
+                    return "HEVC";
+                }
+
+                if (c.StartsWith("av01"))
+                {
+                    return "AV1";
+                }
+            }
+
+            return null;
         }
 
         public int CompareTo(TwitchVideoQuality other)

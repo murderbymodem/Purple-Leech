@@ -15,7 +15,7 @@ A clear instruction on what steps someone has to follow to reproduce this issue.
 
 **Information**
 - Twitch VOD URL
-- Twitch Leecher-DX log file
+- Twitch Leech log file
 - Download logs
 - Operating System
 

@@ -16,6 +16,7 @@ namespace TwitchLeecher.Core.Models
         public static List<DefaultQuality> DefaultQualities = new List<DefaultQuality>()
         {
             new DefaultQuality(DefaultQuality.SOURCE_RES, "Source"),
+            new DefaultQuality(1440, "1440p"),
             new DefaultQuality(720, "720p"),
             new DefaultQuality(480, "480p"),
             new DefaultQuality(360, "360p"),

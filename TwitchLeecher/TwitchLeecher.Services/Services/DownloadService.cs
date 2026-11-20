@@ -324,7 +324,7 @@ namespace TwitchLeecher.Services.Services
         private void WriteDownloadInfo(Action<string> log, DownloadParameters downloadParams, string ffmpegFile,
             string tempDir)
         {
-            log(Environment.NewLine + Environment.NewLine + "TWITCH LEECHER INFO");
+            log(Environment.NewLine + Environment.NewLine + "TWITCH LEECH INFO");
             log(Environment.NewLine +
                 "--------------------------------------------------------------------------------------------");
             log(Environment.NewLine + "Version: " + AssemblyUtil.Get.GetAssemblyVersion().Trim());

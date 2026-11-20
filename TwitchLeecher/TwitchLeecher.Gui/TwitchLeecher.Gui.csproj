@@ -171,16 +171,6 @@
         <PackageReference Include="Projektanker.Icons.Avalonia" Version="9.6.2" />
     </ItemGroup>
     <ItemGroup>
-        <Resource Include="..\Resources\Images\TL_Icon.png">
-            <Link>Resources\TL_Icon.png</Link>
-        </Resource>
-    </ItemGroup>
-    <ItemGroup>
-        <Resource Include="..\Resources\Images\TL_Icon.ico">
-            <Link>Resources\TL_Icon.ico</Link>
-        </Resource>
-    </ItemGroup>
-    <ItemGroup>
       <Folder Include="Assets\" />
     </ItemGroup>
 </Project>

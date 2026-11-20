@@ -46,7 +46,8 @@ namespace TwitchLeecher.Services.Services
 
         private readonly Regex _rxGroup = new Regex("GROUP-ID\\=\"(?<group>.*?)\\\"");
         private readonly Regex _rxName = new Regex("NAME\\=\"(?<name>.*?)\\\"");
-        private readonly Regex _rxResolution = new Regex("RESOLUTION\\=(?<resolution>.*?),");
+        private readonly Regex _rxResolution = new Regex("RESOLUTION\\=(?<resolution>\\d+x\\d+)");
+        private readonly Regex _rxCodecs = new Regex("CODECS\\=\"(?<codecs>.*?)\"");
         private IPreferencesService _preferencesService;
         private readonly ILogService _logService;
         private DateTime? _nextRequest;
@@ -697,6 +698,12 @@ namespace TwitchLeecher.Services.Services
 
                 webClient.QueryString.Add("allow_source", "true");
                 webClient.QueryString.Add("allow_audio_only", "true");
+                // Twitch only lists 1440p (and higher) renditions, which are encoded with HEVC/AV1,
+                // when the client announces that it supports those codecs.
+                webClient.QueryString.Add("supported_codecs", "av1,h265,h264");
+                webClient.QueryString.Add("platform", "web");
+                webClient.QueryString.Add("player_backend", "mediaplayer");
+                webClient.QueryString.Add("playlist_include_framerate", "true");
                 webClient.QueryString.Add("token", vodAuthInfo.Token);
                 webClient.QueryString.Add("sig", vodAuthInfo.Signature);
 
@@ -713,7 +720,7 @@ namespace TwitchLeecher.Services.Services
                 {
                     string line = lines[i];
 
-                    if (!line.StartsWith("#"))
+                    if (!line.StartsWith("#") && i >= 2)
                     {
                         string mediaInfo = lines[i - 2];
                         string streamInfo = lines[i - 1];
@@ -733,9 +740,27 @@ namespace TwitchLeecher.Services.Services
                             resolution = resolutionMatch.Groups["resolution"].Value;
                         }
 
-                        TwitchVideoQuality quality = new TwitchVideoQuality(id, name, resolution);
+                        string codecs = null;
 
-                        playlistInfo.Add(quality, line);
+                        Match codecsMatch = _rxCodecs.Match(streamInfo);
+
+                        if (codecsMatch.Success)
+                        {
+                            codecs = codecsMatch.Groups["codecs"].Value;
+                        }
+
+                        if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(name))
+                        {
+                            continue;
+                        }
+
+                        TwitchVideoQuality quality = new TwitchVideoQuality(id, name, resolution, codecs);
+
+                        // Twitch lists renditions in order of preference, keep the first one per group
+                        if (!playlistInfo.ContainsKey(quality))
+                        {
+                            playlistInfo.Add(quality, line);
+                        }
                     }
                 }
 

@@ -29,9 +29,8 @@ package() {
 	cd "$_pkgname-$_pkgver"
 
 	install -d $pkgdir/usr/{bin,lib}
-	install -d $pkgdir/usr/share/{pixmaps,applications}
+	install -d $pkgdir/usr/share/applications
 	cp -r $pkgname "$pkgdir/usr/lib/"
 	ln -s "/usr/lib/$pkgname/TwitchLeecher" "$pkgdir/usr/bin/$pkgname"
-	cp TwitchLeecher/Resources/Images/TL_Icon.png "$pkgdir/usr/share/pixmaps/twitchleecher-dx.png"
 	cp twitchleecher-dx.desktop "$pkgdir/usr/share/applications/twitchleecher-dx.desktop"
 }

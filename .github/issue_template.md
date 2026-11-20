@@ -7,8 +7,8 @@ Help me beeing efficient, please! I am developing Twitch Leecher in my free time
 When creating a new issue please make sure you follow the below checklist:
 
 - Take a look at the latest closed issues. Maybe yours has already been solved.
-- If you have a problem with a download, provide the download log created by Twitch Leecher
-- Provide the version of Twitch Leecher you are using
+- If you have a problem with a download, provide the download log created by Twitch Leech
+- Provide the version of Twitch Leech you are using
 - Provide information about the video (Url, Channel, ID)
 - Provide information about your operating system (e.g. Windows 10 64 Bit)
 - Try to describe the problem as detailed as possible, I cannot read your mind

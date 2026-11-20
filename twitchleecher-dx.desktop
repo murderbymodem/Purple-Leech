@@ -2,8 +2,7 @@
 [Desktop Entry]
 Type=Application
 Version=1.0
-Name=TwitchLeecher-Dx
+Name=Twitch Leech
 Comment=Fast Twitch Stream Downloader
 Exec=/usr/bin/twitchleecher-dx
-Icon=twitchleecher-dx
 Terminal=false

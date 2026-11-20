@@ -248,12 +248,13 @@ namespace TwitchLeecher.Gui.ViewModels
 
         private TwitchVideoQuality GetSelectedQuality(List<TwitchVideoQuality> qualities, DefaultQuality defaultQuality)
         {
-            TwitchVideoQuality sourceQuality = qualities.Find(q => q.IsSource);
-
-            if (sourceQuality == null)
-            {
-                sourceQuality = qualities[0];
-            }
+            // "Source" means the best available rendition. With enhanced broadcasting the
+            // highest resolution (e.g. 1440p HEVC) can be a separate rendition next to "chunked".
+            TwitchVideoQuality sourceQuality = qualities
+                .Where(q => !q.IsAudioOnly)
+                .OrderByDescending(q => q.VerticalResolution)
+                .ThenByDescending(q => q.IsSource)
+                .FirstOrDefault() ?? qualities[0];
 
             if (defaultQuality.IsSource)
             {

@@ -7,7 +7,7 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="TwitchLeecher.Gui.Views.MessageBoxWindow"
         x:DataType="viewModels:MessageBoxViewModel"
-        Title="Twitch-Leecher DX"
+        Title="Twitch Leech"
         TransparencyLevelHint="AcrylicBlur"
         ExtendClientAreaToDecorationsHint="True"
         CanResize="False"

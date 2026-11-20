@@ -74,9 +74,7 @@
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" Orientation="Horizontal">
-                <Image Source="/Assets/TL_Icon.png" Width="27" Margin="0,1,5,0"
-                       VerticalAlignment="Center" />
-                <TextBlock Text="{Binding ProductName, Mode=OneTime, FallbackValue='Twitch Leecher X.Y'}"
+                <TextBlock Text="{Binding ProductName, Mode=OneTime, FallbackValue='Twitch Leech X.Y'}"
                            FontWeight="Bold" FontSize="20" VerticalAlignment="Top" />
             </StackPanel>
 
