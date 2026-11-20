@@ -54,7 +54,15 @@ Most VOD downloaders let FFmpeg download the video, which rarely gets anywhere n
 
 ## Building from source
 
-Requires the [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0).
+Requires the [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) and PowerShell.
+
+FFmpeg is not stored in the repository. Download the pinned, checksum-verified build once:
+
+```bash
+pwsh scripts/get-ffmpeg.ps1
+```
+
+Then build:
 
 ```bash
 dotnet publish PurpleLeech/PurpleLeech/PurpleLeech.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish
@@ -94,4 +102,6 @@ Purple Leech is based on TwitchLeecher-DX by Manuel "Brainy" Schneider, which is
 
 ## License
 
-[MIT License](LICENSE)
+Purple Leech is licensed under the [MIT License](LICENSE), like the projects it is based on.
+
+The Windows release also contains third-party software, most notably FFmpeg (GPL-3.0), which ships as a separate `ffmpeg.exe`. Their licenses are listed in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) and included in the `licenses` folder of every release.

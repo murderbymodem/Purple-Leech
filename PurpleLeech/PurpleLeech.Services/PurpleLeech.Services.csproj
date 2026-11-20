@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
     <OutputType>Library</OutputType>
@@ -16,7 +16,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Libraries\ffmpeg.exe">
+    <!-- Fetched by scripts/get-ffmpeg.ps1. On Linux the ffmpeg on the PATH is used. -->
+    <None Include="..\Libraries\ffmpeg.exe" Condition="Exists('..\Libraries\ffmpeg.exe')">
       <Link>ffmpeg.exe</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>
@@ -37,9 +38,6 @@
     </PackageReference>
     <PackageReference Include="Ninject">
       <Version>4.0.0-beta.1</Version>
-    </PackageReference>
-    <PackageReference Include="System.Data.SQLite">
-      <Version>2.0.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.421302">
       <PrivateAssets>all</PrivateAssets>
