@@ -31,6 +31,10 @@ jobs:
           (Get-Content $file) -replace 'AssemblyFileVersion\(".*?"\)', "AssemblyFileVersion(""$version"")" | Set-Content $file
           Get-Content $file
 
+      - name: Get FFmpeg
+        shell: pwsh
+        run: ./scripts/get-ffmpeg.ps1
+
       - name: Publish
         run: >
           dotnet publish PurpleLeech/PurpleLeech/PurpleLeech.csproj
@@ -46,6 +50,16 @@ jobs:
         shell: pwsh
         run: |
           $name = if ("${{ github.ref_type }}" -eq "tag") { "PurpleLeech-${{ github.ref_name }}-win-x64.zip" } else { "PurpleLeech-win-x64.zip" }
+
+          # License texts for Purple Leech, the bundled libraries and FFmpeg
+          Remove-Item publish/*.pdb -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path publish/licenses | Out-Null
+          Copy-Item LICENSE publish/LICENSE.txt
+          Copy-Item THIRD-PARTY-NOTICES.md publish/THIRD-PARTY-NOTICES.md
+          Copy-Item licenses/* publish/licenses/
+          Copy-Item PurpleLeech/Libraries/ffmpeg-LICENSE.txt, PurpleLeech/Libraries/ffmpeg-README.txt publish/licenses/
+          if (-not (Test-Path publish/ffmpeg.exe)) { throw "ffmpeg.exe is missing from the build output" }
+
           Compress-Archive -Path publish/* -DestinationPath $name
           "ZIP_NAME=$name" | Out-File -FilePath $env:GITHUB_ENV -Append
 
