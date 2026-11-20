@@ -1,12 +1,12 @@
-# Twitch Leech
+# Purple Leech
 If you are looking for an extremely fast and easy to use Twitch VOD downloader, this is your tool!
 
 ## Download (Windows)
-Grab the latest `TwitchLeech-vX.Y.Z-win-x64.zip` from the [Releases](https://github.com/murderbymodem/Twitch-Leech/releases) page, unzip it anywhere and run `TwitchLeech.exe`.
+Grab the latest `PurpleLeech-vX.Y.Z-win-x64.zip` from the [Releases](https://github.com/murderbymodem/Purple-Leech/releases) page, unzip it anywhere and run `PurpleLeech.exe`.
 
 - Windows 10/11, 64 bit
 - No .NET installation required (the executable is self-contained)
-- Keep `ffmpeg.exe` in the same folder as `TwitchLeech.exe`
+- Keep `ffmpeg.exe` in the same folder as `PurpleLeech.exe`
 
 ## Building from source
 Requires the [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0).
@@ -19,7 +19,7 @@ Releases are built automatically by GitHub Actions when a `v*` tag (e.g. `v4.0.0
 
 # Legal Disclaimer
 1. Purpose of the Software
-This software (Twitch Leech) is provided as a technical tool for personal use only. It is intended to facilitate the download of video content from Twitch for offline viewing, archiving, or personal backup purposes (e.g., for creators to save their own broadcasts).
+This software (Purple Leech) is provided as a technical tool for personal use only. It is intended to facilitate the download of video content from Twitch for offline viewing, archiving, or personal backup purposes (e.g., for creators to save their own broadcasts).
 
 2. User Responsibility
 By using this software, you agree to comply with all applicable copyright laws and the Twitch Terms of Service (ToS). The developer of this software does not encourage, support, or induce any form of copyright infringement or unauthorized distribution of content. You are solely responsible for the legality of the content you download.
@@ -38,7 +38,7 @@ This project is an independent open-source "fork" and is not affiliated with, au
 The software is provided "as is", without warranty of any kind. The developer shall not be liable for any claims, damages, or other liabilities, including account suspensions or legal actions resulting from the use of this tool.
 
 ## What is the difference compared to other VOD downloaders?
-Nearly all of the well known VOD downloaders execute the download process via FFMPEG's integrated download capabilities. However, this is extremely slow. The download speed rarely exceeds 1.5Mbit even if the internet connection is 100 times faster. Twitch Leech does not use FFMPEG for download tasks at all. It downloads thousands of small video chunks in parallel while using all of the available bandwidth of your internet connection. As soon as all video chunks are downloaded, FFMPEG is only used to merge those chunks together in order to create a single video file again.
+Nearly all of the well known VOD downloaders execute the download process via FFMPEG's integrated download capabilities. However, this is extremely slow. The download speed rarely exceeds 1.5Mbit even if the internet connection is 100 times faster. Purple Leech does not use FFMPEG for download tasks at all. It downloads thousands of small video chunks in parallel while using all of the available bandwidth of your internet connection. As soon as all video chunks are downloaded, FFMPEG is only used to merge those chunks together in order to create a single video file again.
 
 ## Features
 - Very easy to use, no manual needed
@@ -62,18 +62,18 @@ Nearly all of the well known VOD downloaders execute the download process via FF
 - Download VODs that might be unavailable on Twitch due to missing chunk data
   
 ## Support & Issues
-If you have any problem or wish a feature for Twitch Leech, feel free to [open an issue](https://github.com/murderbymodem/Twitch-Leech/issues). Please include:
+If you have any problem or wish a feature for Purple Leech, feel free to [open an issue](https://github.com/murderbymodem/Purple-Leech/issues). Please include:
 
-- The version of Twitch Leech you are using
+- The version of Purple Leech you are using
 - As much information about the VOD as possible (Url, Channel, ID)
 - Your operating system (e.g. Windows 11 64 Bit)
 - A detailed description of the problem
-- For download problems, the download log created by Twitch Leech
+- For download problems, the download log created by Purple Leech
 
 ## Credits
 Claudecoded by murderbymodem.
 
-Twitch Leech is based on TwitchLeecher-DX by Manuel "Brainy" Schneider, which is a fork of Twitch Leecher by Dominik "Franiac" Rebitzer.
+Purple Leech is based on TwitchLeecher-DX by Manuel "Brainy" Schneider, which is a fork of Twitch Leecher by Dominik "Franiac" Rebitzer.
 
 ## License
 [MIT License](LICENSE)

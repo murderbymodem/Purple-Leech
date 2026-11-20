@@ -14,8 +14,8 @@ namespace TwitchLeecher.Services.Services
     {
         #region Constants
 
-        private const string LatestReleaseUrl = "https://github.com/murderbymodem/Twitch-Leech/releases/tag/v{0}";
-        private const string ReleasesApiUrl = "https://api.github.com/repos/murderbymodem/Twitch-Leech/releases";
+        private const string LatestReleaseUrl = "https://github.com/murderbymodem/Purple-Leech/releases/tag/v{0}";
+        private const string ReleasesApiUrl = "https://api.github.com/repos/murderbymodem/Purple-Leech/releases";
 
         #endregion Constants
 
@@ -27,7 +27,7 @@ namespace TwitchLeecher.Services.Services
             {
                 using (WebClient webClient = new WebClient() { Encoding = Encoding.UTF8 })
                 {
-                    webClient.Headers.Add(HttpRequestHeader.UserAgent, "TwitchLeech");
+                    webClient.Headers.Add(HttpRequestHeader.UserAgent, "PurpleLeech");
 
                     string result = webClient.DownloadString(ReleasesApiUrl);
 

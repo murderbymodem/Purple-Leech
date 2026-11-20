@@ -1,6 +1,6 @@
 name: Windows release
 
-# Push a tag like v4.0.0 to build TwitchLeech.exe and attach it to a GitHub release.
+# Push a tag like v4.0.0 to build PurpleLeech.exe and attach it to a GitHub release.
 # Run manually from the Actions tab to just build the zip as a workflow artifact.
 on:
   push:
@@ -45,13 +45,13 @@ jobs:
       - name: Package
         shell: pwsh
         run: |
-          $name = if ("${{ github.ref_type }}" -eq "tag") { "TwitchLeech-${{ github.ref_name }}-win-x64.zip" } else { "TwitchLeech-win-x64.zip" }
+          $name = if ("${{ github.ref_type }}" -eq "tag") { "PurpleLeech-${{ github.ref_name }}-win-x64.zip" } else { "PurpleLeech-win-x64.zip" }
           Compress-Archive -Path publish/* -DestinationPath $name
           "ZIP_NAME=$name" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - uses: actions/upload-artifact@v4
         with:
-          name: TwitchLeech-win-x64
+          name: PurpleLeech-win-x64
           path: ${{ env.ZIP_NAME }}
 
       - name: Create release

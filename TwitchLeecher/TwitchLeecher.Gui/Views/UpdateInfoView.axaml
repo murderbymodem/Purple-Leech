@@ -51,7 +51,7 @@
             </Border>
 
             <TextBlock Grid.Row="2">
-                <Run Text="Twitch Leech" />
+                <Run Text="Purple Leech" />
                 <Run Text="{Binding UpdateInfo.NewVersionStr, Mode=OneWay, FallbackValue='X.Y.Z'}" />
                 <Run Text="has been released on" />
                 <Run Text="{Binding UpdateInfo.ReleaseDate, Mode=OneWay, FallbackValue='04/21/2016', StringFormat=d}" />
@@ -61,7 +61,7 @@
                 <Button Classes="hyperlink" Command="{Binding DownloadCommand}"
                         CommandParameter="{Binding UpdateInfo.DownloadUrl, Mode=OneWay}">
                     <TextBlock
-                        Text="{Binding UpdateInfo.DownloadUrl, Mode=OneWay, FallbackValue='https://github.com/murderbymodem/Twitch-Leech/releases/tag/vX.Y.Z'}" />
+                        Text="{Binding UpdateInfo.DownloadUrl, Mode=OneWay, FallbackValue='https://github.com/murderbymodem/Purple-Leech/releases/tag/vX.Y.Z'}" />
                 </Button>
             </TextBlock>
 

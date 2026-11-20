@@ -78,7 +78,7 @@
 
                 <StackPanel Grid.Column="1" Margin="10,6,0,0">
                     <TextBlock Classes="TlTitleText"
-                               Text="{Binding Title, FallbackValue='Twitch Leech'}" />
+                               Text="{Binding Title, FallbackValue='Purple Leech'}" />
                     <TextBlock Classes="SubTitleText" Text="The Broadcast Downloader" Margin="10,0,0,0" />
                 </StackPanel>
 

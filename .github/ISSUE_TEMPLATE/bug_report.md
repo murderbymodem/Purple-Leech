@@ -15,7 +15,7 @@ A clear instruction on what steps someone has to follow to reproduce this issue.
 
 **Information**
 - Twitch VOD URL
-- Twitch Leech log file
+- Purple Leech log file
 - Download logs
 - Operating System
 

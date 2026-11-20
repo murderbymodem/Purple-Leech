@@ -59,10 +59,10 @@ namespace TwitchLeecher.Gui.ViewModels
         }
 
         public string Description =>
-            $"Twitch Leech checks these channels every {_monitorService.PollIntervalSeconds} seconds. " +
+            $"Purple Leech checks these channels every {_monitorService.PollIntervalSeconds} seconds. " +
             "When one goes live, its VOD is recorded while the stream is running, so the download is " +
             "finished moments after the stream ends, before Twitch mutes copyrighted audio. " +
-            "Twitch Leech has to stay open for this to work, and your PC is kept awake while recording.";
+            "Purple Leech has to stay open for this to work, and your PC is kept awake while recording.";
 
         public string NewChannel
         {

@@ -64,7 +64,7 @@
                                 <TextBlock Classes="TlToolTipHeadlineText" Text="Check for Updates" />
                                 <TextBlock TextAlignment="Justify">
                                     You will automatically be informed if a new version
-                                    of Twitch Leech is available for download.
+                                    of Purple Leech is available for download.
                                 </TextBlock>
                             </StackPanel>
                         </ToolTip>
@@ -233,7 +233,7 @@
                             <StackPanel>
                                 <TextBlock Classes="TlToolTipHeadlineText" Text="Search on Start" />
                                 <TextBlock TextAlignment="Justify">
-                                    If enabled, Twitch Leech performs a search with the above settings on application startup.
+                                    If enabled, Purple Leech performs a search with the above settings on application startup.
                                 </TextBlock>
                             </StackPanel>
                         </ToolTip>

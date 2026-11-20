@@ -50,7 +50,7 @@
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" Orientation="Horizontal">
-                <TextBlock Text="{Binding ProductName, Mode=OneTime, FallbackValue='Twitch Leech X.Y'}"
+                <TextBlock Text="{Binding ProductName, Mode=OneTime, FallbackValue='Purple Leech X.Y'}"
                            FontWeight="Bold" FontSize="20" VerticalAlignment="Top" />
             </StackPanel>
 
@@ -70,16 +70,16 @@
             <TextBlock Grid.Row="4" Text="Support &amp; Issues" FontWeight="Bold" Margin="0,15,0,0" />
             <TextBlock Grid.Row="5" Margin="15,5,0,0">
                 <Button Classes="hyperlink" Command="{Binding OpenLinkCommand}"
-                        CommandParameter="https://github.com/murderbymodem/Twitch-Leech/issues">
-                    https://github.com/murderbymodem/Twitch-Leech/issues
+                        CommandParameter="https://github.com/murderbymodem/Purple-Leech/issues">
+                    https://github.com/murderbymodem/Purple-Leech/issues
                 </Button>
             </TextBlock>
 
             <TextBlock Grid.Row="6" Text="Source Code &amp; Documentation" FontWeight="Bold" Margin="0,15,0,0" />
             <TextBlock Grid.Row="7" Margin="15,5,0,0">
                 <Button Classes="hyperlink" Command="{Binding OpenLinkCommand}"
-                        CommandParameter="https://github.com/murderbymodem/Twitch-Leech">
-                    https://github.com/murderbymodem/Twitch-Leech
+                        CommandParameter="https://github.com/murderbymodem/Purple-Leech">
+                    https://github.com/murderbymodem/Purple-Leech
                 </Button>
             </TextBlock>
 

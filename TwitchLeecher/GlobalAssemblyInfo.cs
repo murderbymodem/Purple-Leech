@@ -1,7 +1,7 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyProduct("Twitch Leech")]
+[assembly: AssemblyProduct("Purple Leech")]
 [assembly: AssemblyDescription("Twitch Broadcast Downloader")]
 [assembly: AssemblyCompany("murderbymodem")]
 [assembly: AssemblyCopyright("Copyright (c) 2026 murderbymodem")]
