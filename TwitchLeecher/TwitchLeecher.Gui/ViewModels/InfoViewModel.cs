@@ -12,10 +12,8 @@ namespace TwitchLeecher.Gui.ViewModels
         #region Fields
 
         private ICommand _openlinkCommand;
-        private ICommand _donateCommand;
 
         private readonly IDialogService _dialogService;
-        private readonly IDonationService _donationService;
 
         private readonly object _commandLockObject;
 
@@ -23,14 +21,13 @@ namespace TwitchLeecher.Gui.ViewModels
 
         #region Constructors
 
-        public InfoViewModel(IDialogService dialogService, IDonationService donationService)
+        public InfoViewModel(IDialogService dialogService)
         {
             AssemblyUtil au = AssemblyUtil.Get;
 
             ProductName = au.GetProductName() + " " + au.GetAssemblyVersion().Trim();
 
             _dialogService = dialogService;
-            _donationService = donationService;
 
             _commandLockObject = new object();
         }
@@ -51,19 +48,6 @@ namespace TwitchLeecher.Gui.ViewModels
                 }
 
                 return _openlinkCommand;
-            }
-        }
-
-        public ICommand DonateCommand
-        {
-            get
-            {
-                if (_donateCommand == null)
-                {
-                    _donateCommand = new DelegateCommand(Donate);
-                }
-
-                return _donateCommand;
             }
         }
 
@@ -88,21 +72,6 @@ namespace TwitchLeecher.Gui.ViewModels
                         Verb = "open"
                     };
                     Process.Start(psi);
-                }
-            }
-            catch (Exception ex)
-            {
-                _dialogService.ShowAndLogException(ex);
-            }
-        }
-
-        private void Donate()
-        {
-            try
-            {
-                lock (_commandLockObject)
-                {
-                    _donationService.OpenDonationPage();
                 }
             }
             catch (Exception ex)

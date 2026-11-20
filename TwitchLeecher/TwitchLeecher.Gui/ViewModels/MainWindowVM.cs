@@ -20,7 +20,6 @@ namespace TwitchLeecher.Gui.ViewModels
     {
         #region Fields
 
-        private bool _showDonationButton;
 
         private bool _isAuthenticated;
         private bool _isAuthenticatedSubOnly;
@@ -37,7 +36,6 @@ namespace TwitchLeecher.Gui.ViewModels
         private readonly IAuthService _authService;
         private readonly IDownloadService _downloadService;
         private readonly IDialogService _dialogService;
-        private readonly IDonationService _donationService;
         private readonly INavigationService _navigationService;
         private readonly IRuntimeDataService _runtimeDataService;
         private readonly ISearchService _searchService;
@@ -48,7 +46,6 @@ namespace TwitchLeecher.Gui.ViewModels
         private ICommand _showDownloadsCommand;
         private ICommand _showSubOnlyCommand;
         private ICommand _showPreferencesCommand;
-        private ICommand _donateCommand;
         private ICommand _showInfoCommand;
         private ICommand _revokeCommand;
 
@@ -66,7 +63,6 @@ namespace TwitchLeecher.Gui.ViewModels
             IAuthService authService,
             IDownloadService downloadService,
             IDialogService dialogService,
-            IDonationService donationService,
             INavigationService navigationService,
             IRuntimeDataService runtimeDataService,
             ISearchService searchService,
@@ -81,7 +77,6 @@ namespace TwitchLeecher.Gui.ViewModels
             _authService = authService;
             _downloadService = downloadService;
             _dialogService = dialogService;
-            _donationService = donationService;
             _navigationService = navigationService;
             _runtimeDataService = runtimeDataService;
             _searchService = searchService;
@@ -93,12 +88,9 @@ namespace TwitchLeecher.Gui.ViewModels
             _eventAggregator.GetEvent<AuthChangedEvent>().Subscribe(AuthChanged);
             _eventAggregator.GetEvent<AuthResultEvent>().Subscribe(AuthResultAction);
             _eventAggregator.GetEvent<SubOnlyAuthChangedEvent>().Subscribe(SubOnlyAuthChanged);
-            _eventAggregator.GetEvent<PreferencesSavedEvent>().Subscribe(PreferencesSaved);
             _eventAggregator.GetEvent<VideosCountChangedEvent>().Subscribe(VideosCountChanged);
             _eventAggregator.GetEvent<DownloadsCountChangedEvent>().Subscribe(DownloadsCountChanged);
             _eventAggregator.GetEvent<ShowViewEvent>().Subscribe(ShowView);
-
-            _showDonationButton = _preferencesService.CurrentPreferences.AppShowDonationButton;
         }
 
         #endregion Constructors
@@ -118,13 +110,6 @@ namespace TwitchLeecher.Gui.ViewModels
         }
 
         public string Title { get; }
-
-        public bool ShowDonationButton
-        {
-            get { return _showDonationButton; }
-
-            private set { SetProperty(ref _showDonationButton, value, nameof(ShowDonationButton)); }
-        }
 
         public bool IsAuthenticated
         {
@@ -166,7 +151,6 @@ namespace TwitchLeecher.Gui.ViewModels
 
         public ICommand ShowPreferencesCommand => _showPreferencesCommand ??= new DelegateCommand(ShowPreferences);
 
-        public ICommand DonateCommand => _donateCommand ??= new DelegateCommand(Donate);
 
         public ICommand ShowInfoCommand => _showInfoCommand ??= new DelegateCommand(ShowInfo);
 
@@ -230,21 +214,6 @@ namespace TwitchLeecher.Gui.ViewModels
                 lock (_commandLockObject)
                 {
                     _navigationService.ShowPreferences();
-                }
-            }
-            catch (Exception ex)
-            {
-                _dialogService.ShowAndLogException(ex);
-            }
-        }
-
-        private void Donate()
-        {
-            try
-            {
-                lock (_commandLockObject)
-                {
-                    _donationService.OpenDonationPage();
                 }
             }
             catch (Exception ex)
@@ -321,18 +290,6 @@ namespace TwitchLeecher.Gui.ViewModels
             if (contentVM != null)
             {
                 MainView = contentVM;
-            }
-        }
-
-        private void PreferencesSaved()
-        {
-            try
-            {
-                ShowDonationButton = _preferencesService.CurrentPreferences.AppShowDonationButton;
-            }
-            catch (Exception ex)
-            {
-                _dialogService.ShowAndLogException(ex);
             }
         }
 

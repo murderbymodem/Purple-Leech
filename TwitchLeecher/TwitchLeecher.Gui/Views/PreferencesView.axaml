@@ -71,22 +71,7 @@
                     </ToolTip.Tip>
                 </avalonia:Icon>
 
-                <CheckBox Grid.Row="2" Grid.Column="0" Content="Show Donation Button"
-                          IsChecked="{Binding CurrentPreferences.AppShowDonationButton}" VerticalAlignment="Center"
-                          HorizontalAlignment="Left" />
-                <avalonia:Icon Grid.Row="2" Grid.Column="2" Classes="Img_Help" Value="fa-solid fa-circle-question">
-                    <ToolTip.Tip>
-                        <ToolTip Width="350">
-                            <StackPanel>
-                                <TextBlock Classes="TlToolTipHeadlineText" Text="Show Donation Button" />
-                                <TextBlock TextAlignment="Justify">
-                                    Show or hide the donation button ($) in the titlebar
-                                </TextBlock>
-                            </StackPanel>
-                        </ToolTip>
-                    </ToolTip.Tip>
-                </avalonia:Icon>
-                <Grid Grid.Row="4" Grid.Column="0">
+                <Grid Grid.Row="2" Grid.Column="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />

@@ -19,6 +19,9 @@
     <None Include="..\Libraries\ffmpeg.exe">
       <Link>ffmpeg.exe</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+      <!-- Keep ffmpeg.exe next to the executable when publishing as a single file -->
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
     </None>
   </ItemGroup>
   <ItemGroup>

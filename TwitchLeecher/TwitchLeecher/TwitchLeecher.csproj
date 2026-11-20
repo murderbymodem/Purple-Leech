@@ -8,6 +8,7 @@
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
         <RootNamespace>TwitchLeecher</RootNamespace>
         <PackageId>TwitchLeecher</PackageId>
+        <AssemblyName>TwitchLeech</AssemblyName>
         <LangVersion>14</LangVersion>
     </PropertyGroup>
 

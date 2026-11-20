@@ -27,30 +27,6 @@
                 </ControlTemplate>
             </Setter>
         </Style>
-        <Style Selector="Button.DonateButton">
-            <Setter Property="Background" Value="#00000000" />
-            <Setter Property="BorderBrush" Value="#00000000" />
-            <Setter Property="Foreground" Value="#00000000" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="HorizontalContentAlignment" Value="Center" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type Button}">
-                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                Background="{TemplateBinding Background}">
-                            <ContentPresenter x:Name="contentPresenter" Focusable="False"
-                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                              Margin="{TemplateBinding Padding}" RecognizesAccessKey="True"
-                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
     </UserControl.Styles>
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -79,32 +55,26 @@
             </StackPanel>
 
             <TextBlock Grid.Row="1" Text="Developers" FontWeight="Bold" Margin="0,15,0,0" />
-            <TextBlock Grid.Row="2" Text="Dominik &quot;Franiac&quot; Rebitzer" Margin="15,5,0,0" />
-            <TextBlock Grid.Row="3" Text="Manuel &quot;Brainy&quot; Schneider" Margin="15,5,0,0" />
+            <TextBlock Grid.Row="2" Text="murderbymodem" Margin="15,5,0,0" />
+            <TextBlock Grid.Row="3" Margin="15,5,0,0"
+                       Text="Based on work by Dominik &quot;Franiac&quot; Rebitzer and Manuel &quot;Brainy&quot; Schneider" />
 
             <TextBlock Grid.Row="4" Text="Support &amp; Issues" FontWeight="Bold" Margin="0,15,0,0" />
             <TextBlock Grid.Row="5" Margin="15,5,0,0">
                 <Button Classes="hyperlink" Command="{Binding OpenLinkCommand}"
-                        CommandParameter="https://github.com/schneidermanuel/TwitchLeecher-Dx/issues">
-                    https://github.com/schneidermanuel/TwitchLeecher-Dx/issues
+                        CommandParameter="https://github.com/murderbymodem/Twitch-Leech/issues">
+                    https://github.com/murderbymodem/Twitch-Leech/issues
                 </Button>
             </TextBlock>
 
             <TextBlock Grid.Row="6" Text="Source Code &amp; Documentation" FontWeight="Bold" Margin="0,15,0,0" />
             <TextBlock Grid.Row="7" Margin="15,5,0,0">
                 <Button Classes="hyperlink" Command="{Binding OpenLinkCommand}"
-                        CommandParameter="http://github.com/schneidermanuel/TwitchLeecher-Dx">
-                    http://github.com/schneidermanuel/TwitchLeecher-Dx
+                        CommandParameter="https://github.com/murderbymodem/Twitch-Leech">
+                    https://github.com/murderbymodem/Twitch-Leech
                 </Button>
             </TextBlock>
 
-            <TextBlock Grid.Row="8" Text="Donate" FontWeight="Bold" Margin="0,15,0,0" />
-            <TextBlock Grid.Row="9" Text="Help me out with a bottle of beer if you like the program :)"
-                       Margin="15,5,0,0" />
-            <Button Classes="DonateButton" Grid.Row="10" Command="{Binding DonateCommand}" HorizontalAlignment="Left"
-                    Margin="15,5,0,0" Cursor="Hand">
-                <Image Classes="Img_Donate" />
-            </Button>
         </Grid>
     </ScrollViewer>
 </UserControl>

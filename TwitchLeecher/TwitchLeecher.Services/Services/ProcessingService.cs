@@ -20,7 +20,7 @@ namespace TwitchLeecher.Services.Services
         public string FFMPEGExe =>
             RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
                 ? "ffmpeg"
-                : Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "ffmpeg.exe");
+                : Path.Combine(AppContext.BaseDirectory, "ffmpeg.exe");
 
         #endregion Constants
 

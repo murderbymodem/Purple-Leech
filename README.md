@@ -1,18 +1,21 @@
-The is a new maintained fork of [Twitch Leecher](https://github.com/Franiac/TwitchLeecher)
-Don't forget to leve a star if you like it!
-<p align="center">
-  <img src="https://github.com/schneidermanuel/TwitchLeecher-Dx/assets/57318033/35f55b28-9970-4c95-89fb-01fac4ad5711" />
-</p>
-
 # Twitch Leech
 If you are looking for an extremely fast and easy to use Twitch VOD downloader, this is your tool!
 
-## Linux Version
-There is an [aur package](https://aur.archlinux.org/packages/twitchleecher-dx) available!
+## Download (Windows)
+Grab the latest `TwitchLeech-vX.Y.Z-win-x64.zip` from the [Releases](https://github.com/murderbymodem/Twitch-Leech/releases) page, unzip it anywhere and run `TwitchLeech.exe`.
 
-## Windows Version
-Download the executable [here](https://github.com/schneidermanuel/TwitchLeecher-Dx/releases/download/v3.9.0/twitchleecher-dx-3.9.0-setup.exe)
-- Requires [.net 10.0](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
+- Windows 10/11, 64 bit
+- No .NET installation required (the executable is self-contained)
+- Keep `ffmpeg.exe` in the same folder as `TwitchLeech.exe`
+
+## Building from source
+Requires the [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0).
+
+```bash
+dotnet publish TwitchLeecher/TwitchLeecher/TwitchLeecher.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish
+```
+
+Releases are built automatically by GitHub Actions when a `v*` tag (e.g. `v4.0.0`) is pushed.
 
 # Legal Disclaimer
 1. Purpose of the Software
@@ -51,31 +54,24 @@ Nearly all of the well known VOD downloaders execute the download process via FF
 - Specify default download quality
 - Specify default download folders
 - Specify a filename template with wildcards for your downloads
-- Developed by an experienced Software Engineer
 - Free and Open Source
 - Actively maintained
-- Modern .net 6.0 Framework
+- Modern .NET 10 framework
 - Save favorite search parameter as preset
-- Download VOD's that might are unavailable on twitch due to missing chunk data
+- 1440p (HEVC/AV1) VOD download support
+- Download VODs that might be unavailable on Twitch due to missing chunk data
   
 ## Support & Issues
+If you have any problem or wish a feature for Twitch Leech, feel free to [open an issue](https://github.com/murderbymodem/Twitch-Leech/issues). Please include:
 
-If you have any problem or wish a feature for Twitch Leech, feel free to open an issue on this page!
-> **IMPORTANT:** Help me be efficient, please! I am developing Twitch Leecher in my free time for no money. Contribute to the project by posting complete, structured and helpful issues which I can reproduce quickly without asking for missing information. When creating a new issue please follow the below checklist:
+- The version of Twitch Leech you are using
+- As much information about the VOD as possible (Url, Channel, ID)
+- Your operating system (e.g. Windows 11 64 Bit)
+- A detailed description of the problem
+- For download problems, the download log created by Twitch Leech
 
-- Windows Insider Builds are NOT supported!
-- Upgrade to the latest version of Twitch Leech and .net 6.0 runtime
-- Provide the version of Twitch Leech you are using
-- Provide as much information about the VOD as possible (Url, Channel, ID)
-- Provide information about your operating system (e.g. Windows 10 64 Bit)
-- Try to describe the problem as detailed as possible, I cannot read your mind ;)
-- Is there any additional information about the issue that might be interesting for me? Write it down!
-- When you have a problem with a download, provide the download log created by Twitch Leech (see screenshot below)
-![2023-09-17 10 19 42](https://github.com/schneidermanuel/TwitchLeecher-Dx/assets/57318033/1472d989-4df9-44c6-9ccb-4519345d2234)
+## Credits
+Twitch Leech is based on Twitch Leecher by Dominik "Franiac" Rebitzer and its fork by Manuel "Brainy" Schneider.
 
-# Donate
-
-If you wan't to support me and the development of this project, please consider donating! [Donate](https://www.tipeeestream.com/brainyxs/donation)
-
-## LICENSE
-[MIT License](https://github.com/schneidermanuel/TwitchLeecher-DX/blob/master/LICENSE)
+## License
+[MIT License](LICENSE)

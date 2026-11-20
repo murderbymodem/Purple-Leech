@@ -2,7 +2,7 @@
 
 READ THIS FIRST!!!
 
-Help me beeing efficient, please! I am developing Twitch Leecher in my free time for no money. Contribute to the project by posting complete, structured and helpful issues which I can reproduce quickly without asking for missing information.
+Please post complete, structured and helpful issues that can be reproduced quickly without asking for missing information.
 
 When creating a new issue please make sure you follow the below checklist:
 
