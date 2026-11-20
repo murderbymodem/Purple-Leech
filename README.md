@@ -71,7 +71,9 @@ If you have any problem or wish a feature for Twitch Leech, feel free to [open a
 - For download problems, the download log created by Twitch Leech
 
 ## Credits
-Twitch Leech is based on Twitch Leecher by Dominik "Franiac" Rebitzer and its fork by Manuel "Brainy" Schneider.
+Claudecoded by murderbymodem.
+
+Twitch Leech is based on TwitchLeecher-DX by Manuel "Brainy" Schneider, which is a fork of Twitch Leecher by Dominik "Franiac" Rebitzer.
 
 ## License
 [MIT License](LICENSE)

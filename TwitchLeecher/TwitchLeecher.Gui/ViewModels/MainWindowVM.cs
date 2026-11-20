@@ -44,6 +44,7 @@ namespace TwitchLeecher.Gui.ViewModels
 
         private ICommand _showSearchCommand;
         private ICommand _showDownloadsCommand;
+        private ICommand _showMonitorCommand;
         private ICommand _showSubOnlyCommand;
         private ICommand _showPreferencesCommand;
         private ICommand _showInfoCommand;
@@ -67,7 +68,8 @@ namespace TwitchLeecher.Gui.ViewModels
             IRuntimeDataService runtimeDataService,
             ISearchService searchService,
             IPreferencesService preferencesService,
-            IUpdateService updateService)
+            IUpdateService updateService,
+            IChannelMonitorService channelMonitorService)
         {
             AssemblyUtil au = AssemblyUtil.Get;
 
@@ -82,6 +84,9 @@ namespace TwitchLeecher.Gui.ViewModels
             _searchService = searchService;
             _preferencesService = preferencesService;
             _updateService = updateService;
+
+            // Resolving the monitor here starts it with the application
+            channelMonitorService.CaptureStarted += channel => SetNotification($"{channel} is live, recording started");
 
             _commandLockObject = new object();
 
@@ -149,6 +154,8 @@ namespace TwitchLeecher.Gui.ViewModels
 
         public ICommand ShowDownloadsCommand => _showDownloadsCommand ??= new DelegateCommand(ShowDownloads);
 
+        public ICommand ShowMonitorCommand => _showMonitorCommand ??= new DelegateCommand(ShowMonitor);
+
         public ICommand ShowPreferencesCommand => _showPreferencesCommand ??= new DelegateCommand(ShowPreferences);
 
 
@@ -199,6 +206,21 @@ namespace TwitchLeecher.Gui.ViewModels
                 lock (_commandLockObject)
                 {
                     _navigationService.ShowDownloads();
+                }
+            }
+            catch (Exception ex)
+            {
+                _dialogService.ShowAndLogException(ex);
+            }
+        }
+
+        private void ShowMonitor()
+        {
+            try
+            {
+                lock (_commandLockObject)
+                {
+                    _navigationService.ShowMonitor();
                 }
             }
             catch (Exception ex)

@@ -60,6 +60,22 @@ namespace TwitchLeecher.Core.Models
 
         #region Properties
 
+        /// <summary>
+        /// The VOD of a stream that is still live. Chunks are downloaded while the stream runs,
+        /// before Twitch can mute anything, and the download finishes once the stream ends.
+        /// </summary>
+        public bool IsLiveCapture { get; set; }
+
+        /// <summary>
+        /// Login of the channel that is captured live
+        /// </summary>
+        public string LiveChannelLogin { get; set; }
+
+        /// <summary>
+        /// ID of the stream that is captured live
+        /// </summary>
+        public string LiveStreamId { get; set; }
+
         public TwitchVideo Video
         {
             get

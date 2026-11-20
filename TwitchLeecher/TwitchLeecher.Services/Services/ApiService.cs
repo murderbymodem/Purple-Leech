@@ -31,6 +31,7 @@ namespace TwitchLeecher.Services.Services
         private const string USERS_URL = "https://api.twitch.tv/helix/users";
         private const string VIDEOS_URL = "https://api.twitch.tv/helix/videos";
         private const string CHANNELS_URL = "https://api.twitch.tv/helix/channels";
+        private const string STREAMS_URL = "https://api.twitch.tv/helix/streams";
         private const string PLAYLISTS_URL = "https://usher.ttvnw.net/vod/{0}.m3u8";
 
         private const string PROCESSING_THUMBNAIL =
@@ -764,7 +765,85 @@ namespace TwitchLeecher.Services.Services
                     }
                 }
 
+                AddHiddenSourceQuality(playlistInfo);
+
                 return playlistInfo;
+            }
+        }
+
+        /// <summary>
+        /// For 1440p (HEVC) streams Twitch leaves the source quality out of the VOD playlist,
+        /// but it is still stored next to the other qualities in a "chunked" folder.
+        /// </summary>
+        private void AddHiddenSourceQuality(Dictionary<TwitchVideoQuality, string> playlistInfo)
+        {
+            if (playlistInfo.Keys.Any(q => q.IsSource))
+            {
+                return;
+            }
+
+            string anyPlaylist = playlistInfo
+                .Where(e => !e.Key.IsAudioOnly)
+                .Select(e => e.Value)
+                .FirstOrDefault(v => v.StartsWith("http", StringComparison.OrdinalIgnoreCase));
+
+            if (anyPlaylist == null)
+            {
+                return;
+            }
+
+            try
+            {
+                // https://cdn/<vod folder>/<quality>/index-dvr.m3u8
+                Uri uri = new Uri(anyPlaylist);
+                string path = uri.AbsolutePath;
+                string vodFolder = path.Substring(0, path.LastIndexOf('/'));
+                vodFolder = vodFolder.Substring(0, vodFolder.LastIndexOf('/'));
+                string sourceBase = uri.GetLeftPart(UriPartial.Authority) + vodFolder + "/chunked/";
+                string sourcePlaylist = sourceBase + "index-dvr.m3u8";
+
+                using (WebClient webClient = CreateWebClientWithEncoding())
+                {
+                    string playlist = webClient.DownloadString(sourcePlaylist);
+
+                    string mapLine = playlist
+                        .Split('\n')
+                        .FirstOrDefault(l => l.StartsWith("#EXT-X-MAP", StringComparison.OrdinalIgnoreCase));
+
+                    Match mapMatch = mapLine == null ? Match.Empty : Regex.Match(mapLine, "URI=\"(?<uri>.*?)\"");
+
+                    if (!mapMatch.Success)
+                    {
+                        // Without an init segment the resolution cannot be determined cheaply
+                        return;
+                    }
+
+                    byte[] init = webClient.DownloadData(sourceBase + mapMatch.Groups["uri"].Value);
+
+                    if (!Mp4InitInfo.TryRead(init, out int width, out int height, out string codec))
+                    {
+                        return;
+                    }
+
+                    // Only worth offering if it is better than what is listed
+                    if (playlistInfo.Keys.Any(q => q.VerticalResolution >= height))
+                    {
+                        return;
+                    }
+
+                    TwitchVideoQuality source = new TwitchVideoQuality("chunked", "Source",
+                        $"{width}x{height}", codec);
+
+                    playlistInfo.Add(source, sourcePlaylist);
+                }
+            }
+            catch (WebException)
+            {
+                // No hidden source quality, the listed qualities are still fine
+            }
+            catch (Exception ex)
+            {
+                _logService?.LogException(ex);
             }
         }
 
@@ -847,6 +926,110 @@ namespace TwitchLeecher.Services.Services
                     )
                     {
                         return startTime;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public Dictionary<string, LiveStreamInfo> GetLiveStreams(IEnumerable<string> logins)
+        {
+            Dictionary<string, LiveStreamInfo> result =
+                new Dictionary<string, LiveStreamInfo>(StringComparer.OrdinalIgnoreCase);
+
+            List<string> loginList = logins?
+                .Where(l => !string.IsNullOrWhiteSpace(l))
+                .Select(l => l.Trim().ToLowerInvariant())
+                .Distinct()
+                .ToList() ?? new List<string>();
+
+            // Helix accepts up to 100 logins per request
+            for (int i = 0; i < loginList.Count; i += TWITCH_MAX_LOAD_LIMIT)
+            {
+                IEnumerable<string> batch = loginList.Skip(i).Take(TWITCH_MAX_LOAD_LIMIT);
+
+                string url = STREAMS_URL + "?first=" + TWITCH_MAX_LOAD_LIMIT + "&" +
+                             string.Join("&", batch.Select(l => "user_login=" + Uri.EscapeDataString(l)));
+
+                using (WebClient webClient = CreateApiWebClient())
+                {
+                    WaitForNextRequest();
+
+                    string json = webClient.DownloadString(url);
+
+                    SetNextRequestTime(webClient);
+
+                    JArray streamsJson = JObject.Parse(json).Value<JArray>("data");
+
+                    if (streamsJson == null)
+                    {
+                        continue;
+                    }
+
+                    foreach (JToken streamJson in streamsJson)
+                    {
+                        if (!"live".Equals(streamJson.Value<string>("type"), StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+
+                        string startedStr = streamJson.Value<string>("started_at");
+
+                        DateTime startedAt = string.IsNullOrWhiteSpace(startedStr)
+                            ? DateTime.UtcNow
+                            : DateTime.Parse(startedStr, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+
+                        LiveStreamInfo info = new LiveStreamInfo(
+                            streamJson.Value<string>("id"),
+                            streamJson.Value<string>("user_id"),
+                            streamJson.Value<string>("user_login"),
+                            streamJson.Value<string>("user_name"),
+                            streamJson.Value<string>("title"),
+                            startedAt);
+
+                        if (!string.IsNullOrWhiteSpace(info.UserLogin))
+                        {
+                            result[info.UserLogin] = info;
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        public TwitchVideo GetArchiveVideoForStream(string userId, string streamId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                throw new ArgumentNullException(nameof(userId));
+            }
+
+            using (WebClient webClient = CreateApiWebClient())
+            {
+                webClient.QueryString.Add("user_id", userId);
+                webClient.QueryString.Add("type", "archive");
+                webClient.QueryString.Add("first", "5");
+
+                WaitForNextRequest();
+
+                string json = webClient.DownloadString(VIDEOS_URL);
+
+                SetNextRequestTime(webClient);
+
+                JArray videosJson = JObject.Parse(json).Value<JArray>("data");
+
+                if (videosJson == null)
+                {
+                    return null;
+                }
+
+                foreach (JToken videoJson in videosJson)
+                {
+                    if (string.Equals(videoJson.Value<string>("stream_id"), streamId, StringComparison.Ordinal))
+                    {
+                        return ParseVideo(videoJson);
                     }
                 }
             }

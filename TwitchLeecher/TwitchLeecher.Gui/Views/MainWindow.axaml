@@ -37,6 +37,9 @@
         <DataTemplate DataType="{x:Type vm:DownloadsViewModel}">
             <view:DownloadsView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:MonitorViewModel}">
+            <view:MonitorView />
+        </DataTemplate>
         <DataTemplate DataType="{x:Type vm:PreferencesViewModel}">
             <view:PreferencesView />
         </DataTemplate>
@@ -82,7 +85,7 @@
                 <StackPanel Grid.Column="2" Orientation="Horizontal"
                             IsVisible="{Binding IsAuthenticated}"
                             Margin="10,0" HorizontalAlignment="Right" VerticalAlignment="Center">
-                    <Button Command="{Binding ShowSearchCommand}" Width="155">
+                    <Button Command="{Binding ShowSearchCommand}" MinWidth="110">
                         <StackPanel Orientation="Horizontal">
                             <avalonia:Icon Value="fa-solid fa-magnifying-glass" Margin="0,1,0,0" Width="16" Height="16"
                                            RenderTransformOrigin="0.5,0.5" />
@@ -94,7 +97,7 @@
                         </StackPanel>
                     </Button>
                     <Button Command="{Binding ShowDownloadsCommand}"
-                            Width="155" Margin="5,0,0,0">
+                            MinWidth="110" Margin="5,0,0,0">
                         <StackPanel Orientation="Horizontal">
                             <avalonia:Icon Value="fa-solid fa-download" Margin="0,1,0,0" Width="16" Height="16"
                                            RenderTransformOrigin="0.5,0.5" />
@@ -103,6 +106,15 @@
                                 <Run
                                     Text="{Binding DownloadsCount, Mode=OneWay, StringFormat=' ({0})', FallbackValue=' (100)'}" />
                             </TextBlock>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding ShowMonitorCommand}"
+                            MinWidth="110" Margin="5,0,0,0"
+                            ToolTip.Tip="Record channels automatically while they are live">
+                        <StackPanel Orientation="Horizontal">
+                            <avalonia:Icon Value="fa-solid fa-tower-broadcast" Margin="0,1,0,0" Width="16" Height="16"
+                                           RenderTransformOrigin="0.5,0.5" />
+                            <TextBlock VerticalAlignment="Center" Margin="5,0,0,0" Text="Monitor" />
                         </StackPanel>
                     </Button>
                 </StackPanel>

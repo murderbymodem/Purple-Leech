@@ -28,6 +28,12 @@ namespace TwitchLeecher.Services.Services
         private const int DOWNLOAD_RETRIES = 3;
         private const int DOWNLOAD_RETRY_TIME = 5;
 
+        private const int LIVE_POLL_SECONDS = 4;
+        private const int LIVE_STALE_SECONDS = 20;
+        private const int LIVE_CHECK_SECONDS = 10;
+        private const int LIVE_MAX_PLAYLIST_FAILURES = 3;
+        private const int LIVE_GIVE_UP_MINUTES = 10;
+
         #endregion Constants
 
         #region Fields
@@ -139,15 +145,19 @@ namespace TwitchLeecher.Services.Services
             {
                 try
                 {
-                    if (!_downloads.Where(d => d.DownloadState == DownloadState.Downloading).Any())
-                    {
-                        TwitchVideoDownload download = _downloads.Where(d => d.DownloadState == DownloadState.Queued)
-                            .FirstOrDefault();
+                    // Live captures start right away and run in parallel, everything else runs one at a time.
+                    TwitchVideoDownload download = _downloads.FirstOrDefault(d =>
+                        d.DownloadState == DownloadState.Queued && d.DownloadParams.IsLiveCapture);
 
-                        if (download == null)
-                        {
-                            return;
-                        }
+                    if (download == null && !_downloads.Any(d =>
+                            d.DownloadState == DownloadState.Downloading && !d.DownloadParams.IsLiveCapture))
+                    {
+                        download = _downloads.FirstOrDefault(d =>
+                            d.DownloadState == DownloadState.Queued && !d.DownloadParams.IsLiveCapture);
+                    }
+
+                    if (download != null)
+                    {
 
                         DownloadParameters downloadParams = download.DownloadParams;
 
@@ -214,17 +224,31 @@ namespace TwitchLeecher.Services.Services
 
                             cancellationToken.ThrowIfCancellationRequested();
 
-                            TwitchPlaylist vodPlaylist = GetVodPlaylist(log, tempDir, playlistInfo, quality);
+                            TwitchPlaylist vodPlaylist;
+                            CropInfo cropInfo;
+                            IEnumerable<string> downloadWarnings;
 
-                            cancellationToken.ThrowIfCancellationRequested();
+                            if (downloadParams.IsLiveCapture)
+                            {
+                                cropInfo = new CropInfo(false, false, 0, 0);
 
-                            CropInfo cropInfo = CropVodPlaylist(vodPlaylist, cropStart, cropEnd, cropStartTime,
-                                cropEndTime);
+                                downloadWarnings = CaptureLive(log, setStatus, setIsIndeterminate, tempDir,
+                                    downloadParams, playlistInfo, quality, out vodPlaylist, cancellationToken);
+                            }
+                            else
+                            {
+                                vodPlaylist = GetVodPlaylist(log, tempDir, playlistInfo, quality);
 
-                            cancellationToken.ThrowIfCancellationRequested();
+                                cancellationToken.ThrowIfCancellationRequested();
 
-                            var downloadWarnings = DownloadParts(log, setStatus, setProgress, vodPlaylist,
-                                cancellationToken);
+                                cropInfo = CropVodPlaylist(vodPlaylist, cropStart, cropEnd, cropStartTime,
+                                    cropEndTime);
+
+                                cancellationToken.ThrowIfCancellationRequested();
+
+                                downloadWarnings = DownloadParts(log, setStatus, setProgress, vodPlaylist,
+                                    cancellationToken);
+                            }
 
                             cancellationToken.ThrowIfCancellationRequested();
 
@@ -247,7 +271,8 @@ namespace TwitchLeecher.Services.Services
                             warnings.AddRange(processingWarnings);
 
                             return warnings;
-                        }, cancellationToken);
+                        }, cancellationToken,
+                            downloadParams.IsLiveCapture ? TaskCreationOptions.LongRunning : TaskCreationOptions.None);
 
                         Task continueTask = downloadVideoTask.ContinueWith((Task<IEnumerable<string>> task) =>
                         {
@@ -433,6 +458,287 @@ namespace TwitchLeecher.Services.Services
             }
         }
 
+        private IEnumerable<string> CaptureLive(Action<string> log, Action<string> setStatus,
+            Action<bool> setIsIndeterminate, string tempDir, DownloadParameters downloadParams,
+            Dictionary<TwitchVideoQuality, string> playlistInfo, TwitchVideoQuality selectedQuality,
+            out TwitchPlaylist vodPlaylist, CancellationToken cancellationToken)
+        {
+            List<string> warnings = new List<string>();
+            HashSet<string> handledParts = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            string playlistUrl = playlistInfo[playlistInfo.Keys.First(q => q.Equals(selectedQuality))];
+            string vodId = downloadParams.Video.Id;
+            string channel = downloadParams.LiveChannelLogin;
+            string streamId = downloadParams.LiveStreamId;
+
+            log(Environment.NewLine + Environment.NewLine + "LIVE CAPTURE");
+            log(Environment.NewLine +
+                "--------------------------------------------------------------------------------------------");
+            log(Environment.NewLine + "Channel: " + channel);
+            log(Environment.NewLine + "Stream ID: " + streamId);
+            log(Environment.NewLine + "Playlist url: " + playlistUrl);
+            log(Environment.NewLine + "Chunks are downloaded while the stream is live and the capture " +
+                "finishes as soon as the stream has ended.");
+
+            setIsIndeterminate(true);
+            setStatus("Recording live");
+
+            TwitchPlaylist latest = null;
+            int lastCount = 0;
+            DateTime lastGrowth = DateTime.UtcNow;
+            DateTime lastLiveCheck = DateTime.MinValue;
+            int playlistFailures = 0;
+            bool streamEnded = false;
+
+            KeepSystemAwake(true);
+
+            try
+            {
+                while (true)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    bool hasEndList = false;
+
+                    try
+                    {
+                        string playlistStr;
+
+                        using (WebClient webClient = new WebClient())
+                        {
+                            playlistStr = webClient.DownloadString(playlistUrl);
+                        }
+
+                        playlistFailures = 0;
+
+                        if (!string.IsNullOrWhiteSpace(playlistStr))
+                        {
+                            hasEndList = playlistStr.Contains("#EXT-X-ENDLIST", StringComparison.OrdinalIgnoreCase);
+
+                            string urlPrefix = playlistUrl.Substring(0, playlistUrl.LastIndexOf("/") + 1);
+                            latest = TwitchPlaylist.Parse(tempDir, playlistStr, urlPrefix);
+                        }
+                    }
+                    catch (WebException ex)
+                    {
+                        playlistFailures++;
+                        log(Environment.NewLine + "Retrieving the live playlist failed (" + playlistFailures +
+                            "): " + ex.Message);
+
+                        if (playlistFailures % 3 == 0)
+                        {
+                            // The signed playlist url might have expired, get a fresh one
+                            try
+                            {
+                                TwitchVideoAuthInfo authInfo = _apiService.GetVodAuthInfo(vodId);
+                                Dictionary<TwitchVideoQuality, string> freshInfo =
+                                    _apiService.GetPlaylistInfo(vodId, authInfo);
+                                TwitchVideoQuality freshQuality = freshInfo.Keys.FirstOrDefault(q => q.Equals(selectedQuality));
+
+                                if (freshQuality != null)
+                                {
+                                    playlistUrl = freshInfo[freshQuality];
+                                    log(Environment.NewLine + "Refreshed playlist url: " + playlistUrl);
+                                }
+                            }
+                            catch (Exception refreshEx)
+                            {
+                                log(Environment.NewLine + "Refreshing the playlist url failed: " + refreshEx.Message);
+                            }
+                        }
+                    }
+
+                    if (latest != null)
+                    {
+                        if (latest.InitSegment != null && !File.Exists(latest.InitSegment.LocalFile))
+                        {
+                            DownloadInitSegment(latest.InitSegment, log);
+                        }
+
+                        List<TwitchPlaylistPart> newParts =
+                            latest.Where(p => !handledParts.Contains(p.LocalFile)).ToList();
+
+                        if (newParts.Count > 0)
+                        {
+                            warnings.AddRange(DownloadLiveParts(log, newParts, handledParts, cancellationToken));
+                        }
+
+                        if (latest.Count > lastCount)
+                        {
+                            lastCount = latest.Count;
+                            lastGrowth = DateTime.UtcNow;
+                        }
+
+                        setStatus("Recording live (" + handledParts.Count + " chunks, " +
+                                  TimeSpan.FromSeconds(Math.Round(latest.Sum(p => p.Length))).ToDaylessString() + ")");
+                    }
+
+                    if (streamEnded)
+                    {
+                        // One last pass after the stream ended has been done, nothing left to fetch
+                        break;
+                    }
+
+                    // Only ask the API once the playlist stops growing, to keep the checks cheap.
+                    TimeSpan sinceGrowth = DateTime.UtcNow - lastGrowth;
+                    bool stale = sinceGrowth > TimeSpan.FromSeconds(LIVE_STALE_SECONDS) || hasEndList ||
+                                 playlistFailures > 0;
+
+                    if (stale && DateTime.UtcNow - lastLiveCheck > TimeSpan.FromSeconds(LIVE_CHECK_SECONDS))
+                    {
+                        lastLiveCheck = DateTime.UtcNow;
+
+                        // If the API cannot be reached, a playlist that stopped growing long ago means the stream is over
+                        if (sinceGrowth > TimeSpan.FromMinutes(LIVE_GIVE_UP_MINUTES) ||
+                            !IsStreamStillLive(channel, streamId, log))
+                        {
+                            log(Environment.NewLine + Environment.NewLine + "The stream has ended, fetching the last chunks...");
+                            streamEnded = true;
+
+                            if (playlistFailures >= LIVE_MAX_PLAYLIST_FAILURES)
+                            {
+                                // The VOD playlist is gone (e.g. the VOD was deleted), keep what we have
+                                break;
+                            }
+
+                            continue;
+                        }
+                    }
+
+                    cancellationToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(LIVE_POLL_SECONDS));
+                }
+            }
+            finally
+            {
+                KeepSystemAwake(false);
+            }
+
+            if (latest == null || latest.Count == 0)
+            {
+                throw new ApplicationException("No video chunks could be captured!");
+            }
+
+            setIsIndeterminate(false);
+
+            log(Environment.NewLine + Environment.NewLine + "Live capture complete, " + handledParts.Count +
+                " chunks captured.");
+
+            vodPlaylist = latest;
+            return warnings;
+        }
+
+        private bool IsStreamStillLive(string channel, string streamId, Action<string> log)
+        {
+            if (string.IsNullOrWhiteSpace(channel))
+            {
+                return false;
+            }
+
+            try
+            {
+                Dictionary<string, LiveStreamInfo> streams = _apiService.GetLiveStreams(new[] { channel });
+
+                return streams.TryGetValue(channel, out LiveStreamInfo stream) &&
+                       (string.IsNullOrWhiteSpace(streamId) || stream.StreamId == streamId);
+            }
+            catch (Exception ex)
+            {
+                // When in doubt keep recording, the next check decides
+                log(Environment.NewLine + "Checking the stream status failed: " + ex.Message);
+                return true;
+            }
+        }
+
+        private IEnumerable<string> DownloadLiveParts(Action<string> log, List<TwitchPlaylistPart> parts,
+            HashSet<string> handledParts, CancellationToken cancellationToken)
+        {
+            List<string> warnings = new List<string>();
+            object syncRoot = new object();
+
+            Parallel.ForEach(parts,
+                new ParallelOptions()
+                {
+                    MaxDegreeOfParallelism = Math.Max(1, _preferencesService.CurrentPreferences.MaxConnectionCount - 1),
+                    CancellationToken = cancellationToken
+                },
+                part =>
+                {
+                    bool done = false;
+
+                    for (int attempt = 0; attempt <= DOWNLOAD_RETRIES && !done; attempt++)
+                    {
+                        foreach (string candidate in SegmentNames.GetCandidates(part.RemoteFile))
+                        {
+                            try
+                            {
+                                using (WebClient downloadClient = new WebClient())
+                                {
+                                    byte[] bytes = downloadClient.DownloadData(candidate);
+                                    FileSystem.DeleteFile(part.LocalFile);
+                                    File.WriteAllBytes(part.LocalFile, bytes);
+                                }
+
+                                done = true;
+                                break;
+                            }
+                            catch (WebException ex) when (ex.Status == WebExceptionStatus.ProtocolError)
+                            {
+                                // Try the next candidate
+                            }
+                            catch (WebException ex)
+                            {
+                                log(Environment.NewLine + "Downloading '" + candidate + "' failed: " + ex.Message);
+                                break;
+                            }
+                        }
+
+                        if (!done && attempt < DOWNLOAD_RETRIES)
+                        {
+                            Thread.Sleep(1000);
+                        }
+                    }
+
+                    lock (syncRoot)
+                    {
+                        if (!done)
+                        {
+                            warnings.Add("Video contains missing frames");
+                            log(Environment.NewLine + "File '" + part.RemoteFile + "' is not available, skipping");
+                        }
+
+                        handledParts.Add(part.LocalFile);
+                    }
+                });
+
+            return warnings;
+        }
+
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+        private static extern uint SetThreadExecutionState(uint esFlags);
+
+        /// <summary>
+        /// Prevents Windows from going to sleep while a live capture is running
+        /// </summary>
+        private static void KeepSystemAwake(bool keepAwake)
+        {
+            if (!OperatingSystem.IsWindows())
+            {
+                return;
+            }
+
+            const uint ES_CONTINUOUS = 0x80000000;
+            const uint ES_SYSTEM_REQUIRED = 0x00000001;
+
+            try
+            {
+                SetThreadExecutionState(keepAwake ? ES_CONTINUOUS | ES_SYSTEM_REQUIRED : ES_CONTINUOUS);
+            }
+            catch
+            {
+                // Not critical
+            }
+        }
+
         private CropInfo CropVodPlaylist(TwitchPlaylist vodPlaylist, bool cropStart, bool cropEnd,
             TimeSpan cropStartTime, TimeSpan cropEndTime)
         {
@@ -535,7 +841,7 @@ namespace TwitchLeecher.Services.Services
                         {
                             using (var downloadClient = new WebClient())
                             {
-                                byte[] bytes = downloadClient.DownloadData(part.RemoteFile);
+                                byte[] bytes = DownloadSegment(downloadClient, part.RemoteFile);
 
                                 FileSystem.DeleteFile(part.LocalFile);
 
@@ -584,6 +890,29 @@ namespace TwitchLeecher.Services.Services
 
             log(Environment.NewLine + Environment.NewLine + "Download of all video chunks complete!");
             return warnings;
+        }
+
+        /// <summary>
+        /// Downloads a chunk, preferring the version with the original audio and falling back to the muted copy.
+        /// Throws the last protocol error if no version exists.
+        /// </summary>
+        private static byte[] DownloadSegment(WebClient client, string remoteFile)
+        {
+            WebException lastProtocolError = null;
+
+            foreach (string candidate in SegmentNames.GetCandidates(remoteFile))
+            {
+                try
+                {
+                    return client.DownloadData(candidate);
+                }
+                catch (WebException ex) when (ex.Status == WebExceptionStatus.ProtocolError)
+                {
+                    lastProtocolError = ex;
+                }
+            }
+
+            throw lastProtocolError ?? new WebException("Chunk not found", WebExceptionStatus.ProtocolError);
         }
 
         private void DownloadInitSegment(TwitchPlaylistPart initSegment, Action<string> log)

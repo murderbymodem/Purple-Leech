@@ -215,7 +215,7 @@ namespace TwitchLeecher.Gui.ViewModels
                             Preferences currentPrefs = _preferencesService.CurrentPreferences.Clone();
 
                             TwitchVideoQuality selectedQuality =
-                                GetSelectedQuality(qualities, currentPrefs.DownloadDefaultQuality);
+                                QualitySelector.Select(qualities, currentPrefs.DownloadDefaultQuality);
 
                             string folder = currentPrefs.DownloadSubfoldersForFav &&
                                             _preferencesService.IsChannelInFavourites(video.Channel)
@@ -244,74 +244,6 @@ namespace TwitchLeecher.Gui.ViewModels
             {
                 _dialogService.ShowAndLogException(ex);
             }
-        }
-
-        private TwitchVideoQuality GetSelectedQuality(List<TwitchVideoQuality> qualities, DefaultQuality defaultQuality)
-        {
-            // "Source" means the best available rendition. With enhanced broadcasting the
-            // highest resolution (e.g. 1440p HEVC) can be a separate rendition next to "chunked".
-            TwitchVideoQuality sourceQuality = qualities
-                .Where(q => !q.IsAudioOnly)
-                .OrderByDescending(q => q.VerticalResolution)
-                .ThenByDescending(q => q.IsSource)
-                .FirstOrDefault() ?? qualities[0];
-
-            if (defaultQuality.IsSource)
-            {
-                return sourceQuality;
-            }
-
-            if (defaultQuality.IsAudioOnly)
-            {
-                TwitchVideoQuality audioOnlyQuality = qualities.FirstOrDefault(q => q.IsAudioOnly);
-
-                if (audioOnlyQuality != null)
-                {
-                    return audioOnlyQuality;
-                }
-                else
-                {
-                    return sourceQuality;
-                }
-            }
-
-            IEnumerable<TwitchVideoQuality> visualQualities = qualities.Where(q => !q.IsAudioOnly);
-
-            int defaultRes = defaultQuality.VerticalResolution;
-
-            TwitchVideoQuality selectedQuality = null;
-
-            foreach (TwitchVideoQuality quality in visualQualities)
-            {
-                if (quality.VerticalResolution <= defaultRes && (selectedQuality == null ||
-                                                                 selectedQuality.VerticalResolution <
-                                                                 quality.VerticalResolution))
-                {
-                    selectedQuality = quality;
-                }
-            }
-
-            if (selectedQuality != null)
-            {
-                return selectedQuality;
-            }
-
-            foreach (TwitchVideoQuality quality in visualQualities)
-            {
-                if (quality.VerticalResolution >= defaultRes && (selectedQuality == null ||
-                                                                 selectedQuality.VerticalResolution >
-                                                                 quality.VerticalResolution))
-                {
-                    selectedQuality = quality;
-                }
-            }
-
-            if (selectedQuality != null)
-            {
-                return selectedQuality;
-            }
-
-            return sourceQuality;
         }
 
         public void ShowSearch()

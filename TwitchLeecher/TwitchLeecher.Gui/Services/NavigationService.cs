@@ -86,6 +86,17 @@ namespace TwitchLeecher.Gui.Services
             Navigate(vm);
         }
 
+        public void ShowMonitor()
+        {
+            if (!_persistentViews.TryGetValue(typeof(MonitorViewModel), out ViewModelBase vm))
+            {
+                vm = _kernel.Get<MonitorViewModel>();
+                _persistentViews.Add(typeof(MonitorViewModel), vm);
+            }
+
+            Navigate(vm);
+        }
+
         public void ShowPreferences()
         {
             if (!_persistentViews.TryGetValue(typeof(PreferencesViewModel), out ViewModelBase vm))
