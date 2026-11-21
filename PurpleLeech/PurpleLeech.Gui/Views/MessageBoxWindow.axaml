@@ -12,7 +12,8 @@
         ExtendClientAreaToDecorationsHint="True"
         CanResize="False"
         Width="450"
-        Height="180">
+        Height="180"
+        Icon="/Assets/purple-leech.ico">
     <Design.DataContext>
         <viewModels:MessageBoxViewModel />
     </Design.DataContext>

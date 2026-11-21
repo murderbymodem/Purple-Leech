@@ -8,7 +8,8 @@
         Height="480"
         MinWidth="450"
         MinHeight="300"
-        x:DataType="viewModels:UpdateInfoViewModel">
+        x:DataType="viewModels:UpdateInfoViewModel"
+        Icon="/Assets/purple-leech.ico">
     <Design.DataContext>
         <viewModels:UpdateInfoViewModel />
     </Design.DataContext>
