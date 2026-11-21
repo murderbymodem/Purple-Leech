@@ -5,6 +5,7 @@
         <Nullable>disable</Nullable>
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationManifest>app.manifest</ApplicationManifest>
+        <ApplicationIcon>..\PurpleLeech.Gui\Assets\purple-leech.ico</ApplicationIcon>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
         <RootNamespace>PurpleLeech</RootNamespace>
         <PackageId>PurpleLeech</PackageId>

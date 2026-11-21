@@ -31,7 +31,7 @@ namespace PurpleLeech.Gui.Views
             _dialogService = dialogService;
             _runtimeDataService = runtimeDataService;
 
-            _namedPipeManager = new NamedPipeManager("TwitchLeecher-DX");
+            _namedPipeManager = new NamedPipeManager("PurpleLeech");
             _namedPipeManager.OnMessage += OnPipeMessage;
             _namedPipeManager.StartServer();
 

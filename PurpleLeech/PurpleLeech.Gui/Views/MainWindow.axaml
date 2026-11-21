@@ -11,6 +11,7 @@
         MinWidth="780"
         MinHeight="600"
         x:DataType="vm:MainWindowVM"
+        Icon="/Assets/purple-leech.ico"
         Title="{Binding Title}">
     <Design.DataContext>
         <vm:MainWindowVM />
@@ -76,7 +77,10 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="1" Margin="10,6,0,0">
+                <Image Grid.Column="0" Source="/Assets/purple-leech.png" Height="44"
+                       Margin="10,4,0,4" VerticalAlignment="Center" />
+
+                <StackPanel Grid.Column="1" Margin="8,6,0,0">
                     <TextBlock Classes="TlTitleText"
                                Text="{Binding Title, FallbackValue='Purple Leech'}" />
                     <TextBlock Classes="SubTitleText" Text="purple VOD downloads" Margin="10,0,0,0" />
