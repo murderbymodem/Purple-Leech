@@ -21,7 +21,8 @@ trap 'rm -rf "$TMP"' EXIT
 
 for url in "${URLS[@]}"; do
   echo "Downloading FFmpeg $VERSION from $url"
-  if curl -fsSL -o "$TMP/ffmpeg.tar.xz" "$url" && echo "$SHA256  $TMP/ffmpeg.tar.xz" | sha256sum -c --quiet; then
+  if curl -fsSL --connect-timeout 20 --retry 3 --retry-delay 5 --retry-all-errors \
+       -o "$TMP/ffmpeg.tar.xz" "$url" && echo "$SHA256  $TMP/ffmpeg.tar.xz" | sha256sum -c --quiet; then
     mkdir -p "$OUT"
     tar -xJf "$TMP/ffmpeg.tar.xz" -C "$TMP"
     install -m 755 "$TMP/ffmpeg-$VERSION-amd64-static/ffmpeg" "$OUT/ffmpeg"

@@ -79,6 +79,14 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
+      # johnvansickle.com is sometimes unreachable from GitHub's runners: keep the verified download.
+      # The key changes with the pinned version/checksum in the script.
+      - name: Cache FFmpeg
+        uses: actions/cache@v4
+        with:
+          path: PurplePlunder/Libraries/linux
+          key: ffmpeg-linux-${{ hashFiles('scripts/get-ffmpeg-linux.sh') }}
+
       - name: Build AppImage
         run: |
           version="$(grep -oP 'AssemblyFileVersion\("\K[^"]+' PurplePlunder/GlobalAssemblyInfo.cs)"
