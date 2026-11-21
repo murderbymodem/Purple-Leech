@@ -1,0 +1,88 @@
+﻿<UserControl x:Class="PurplePlunder.Gui.Views.InfoView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:viewModels="clr-namespace:PurplePlunder.Gui.ViewModels"
+             x:DataType="viewModels:InfoViewModel">
+    <Design.DataContext>
+        <viewModels:InfoViewModel />
+    </Design.DataContext>
+    <UserControl.Styles>
+        <Style Selector="Button.hyperlink">
+            <Setter Property="Foreground" Value="Blue" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <ContentPresenter Content="{TemplateBinding Content}">
+                        <ContentPresenter.Styles>
+                            <Style Selector="TextBlock">
+                                <Setter Property="Foreground" Value="{TemplateBinding Foreground}" />
+                                <Setter Property="FontSize" Value="{TemplateBinding FontSize}" />
+                                <Setter Property="TextDecorations" Value="Underline" />
+                            </Style>
+                        </ContentPresenter.Styles>
+                    </ContentPresenter>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+    </UserControl.Styles>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Orientation="Horizontal">
+                <TextBlock Text="{Binding ProductName, Mode=OneTime, FallbackValue='Purple Plunder X.Y'}"
+                           FontWeight="Bold" FontSize="20" VerticalAlignment="Top" />
+            </StackPanel>
+
+            <TextBlock Grid.Row="1" Text="Credits" FontWeight="Bold" Margin="0,15,0,0" />
+            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="15,5,0,0">
+                <Viewbox Width="16" Height="16" Margin="0,0,6,0" VerticalAlignment="Center">
+                    <Canvas Width="24" Height="24">
+                        <Path Stroke="#D97757" StrokeThickness="2.6" StrokeLineCap="Round"
+                              Data="M12.00,9.60 L12.00,0.80 M13.34,10.01 L17.37,4.04 M14.08,10.80 L21.35,6.60 M14.39,12.17 L21.18,12.64 M14.08,13.20 L21.87,17.70 M13.05,14.16 L16.30,20.81 M12.00,14.40 L12.00,22.60 M10.66,13.99 L6.74,19.79 M9.92,13.20 L2.47,17.50 M9.61,11.83 L2.32,11.32 M9.92,10.80 L2.56,6.55 M10.95,9.84 L7.84,3.46" />
+                    </Canvas>
+                </Viewbox>
+                <TextBlock Text="claudecoded by murderbymodem" VerticalAlignment="Center" />
+            </StackPanel>
+            <TextBlock Grid.Row="3" Margin="15,5,0,0" TextWrapping="Wrap" MaxWidth="520"
+                       Text="Based on TwitchLeecher-DX by Manuel &quot;Brainy&quot; Schneider, a fork of Twitch Leecher by Dominik &quot;Franiac&quot; Rebitzer" />
+
+            <TextBlock Grid.Row="4" Text="Support &amp; Issues" FontWeight="Bold" Margin="0,15,0,0" />
+            <TextBlock Grid.Row="5" Margin="15,5,0,0">
+                <Button Classes="hyperlink" Command="{Binding OpenLinkCommand}"
+                        CommandParameter="https://github.com/murderbymodem/Purple-Plunder/issues">
+                    https://github.com/murderbymodem/Purple-Plunder/issues
+                </Button>
+            </TextBlock>
+
+            <TextBlock Grid.Row="6" Text="Source Code &amp; Documentation" FontWeight="Bold" Margin="0,15,0,0" />
+            <TextBlock Grid.Row="7" Margin="15,5,0,0">
+                <Button Classes="hyperlink" Command="{Binding OpenLinkCommand}"
+                        CommandParameter="https://github.com/murderbymodem/Purple-Plunder">
+                    https://github.com/murderbymodem/Purple-Plunder
+                </Button>
+            </TextBlock>
+
+        </Grid>
+    </ScrollViewer>
+</UserControl>

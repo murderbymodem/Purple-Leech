@@ -1,0 +1,221 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text;
+using PurplePlunder.Core.Models;
+using PurplePlunder.Services.Interfaces;
+using PurplePlunder.Shared.Helpers;
+using PurplePlunder.Shared.IO;
+
+namespace PurplePlunder.Services.Services
+{
+    internal class ProcessingService : IProcessingService
+    {
+        #region Constants
+
+        public string FFMPEGExe =>
+            RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+                ? "ffmpeg"
+                : Path.Combine(AppContext.BaseDirectory, "ffmpeg.exe");
+
+        #endregion Constants
+
+        #region Properties
+
+        #endregion Properties
+
+        #region Methods
+
+        public IEnumerable<string> ConcatParts(Action<string> log, Action<string> setStatus, Action<double> setProgress,
+            VodPlaylist vodPlaylist, string concatFile)
+        {
+            var warnings = new List<string>();
+            
+            setStatus("Merging files");
+            setProgress(0);
+
+            log(Environment.NewLine + Environment.NewLine + "Merging all VOD parts into '" + concatFile + "'...");
+
+            using (FileStream outputStream = new FileStream(concatFile, FileMode.OpenOrCreate, FileAccess.Write))
+            {
+                VodPlaylistPart initSegment = vodPlaylist.InitSegment;
+
+                if (initSegment != null)
+                {
+                    if (File.Exists(initSegment.LocalFile))
+                    {
+                        using (FileStream initStream = new FileStream(initSegment.LocalFile, FileMode.Open, FileAccess.Read))
+                        {
+                            int maxBytes;
+                            byte[] buffer = new byte[4096];
+
+                            while ((maxBytes = initStream.Read(buffer, 0, buffer.Length)) > 0)
+                            {
+                                outputStream.Write(buffer, 0, maxBytes);
+                            }
+                        }
+
+                        FileSystem.DeleteFile(initSegment.LocalFile);
+                    }
+                    else
+                    {
+                        warnings.Add($"Warning: missing VOD init segment: {initSegment.LocalFile}");
+                    }
+                }
+
+                int partsCount = vodPlaylist.Count;
+
+                for (int i = 0; i < partsCount; i++)
+                {
+                    VodPlaylistPart part = vodPlaylist[i];
+
+                    if (!File.Exists(part.LocalFile)) {
+                        warnings.Add($"Warning: missing VOD segment: {part.LocalFile}");
+                        continue;
+                    }
+
+                    using (FileStream partStream = new FileStream(part.LocalFile, FileMode.Open, FileAccess.Read))
+                    {
+                        int maxBytes;
+                        byte[] buffer = new byte[4096];
+
+                        while ((maxBytes = partStream.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            outputStream.Write(buffer, 0, maxBytes);
+                        }
+                    }
+
+                    FileSystem.DeleteFile(part.LocalFile);
+
+                    setProgress(i * 100 / partsCount);
+                }
+            }
+
+            setProgress(100);
+            return warnings;
+        }
+
+
+        public void ConvertVideo(Action<string> log, Action<string> setStatus, Action<double> setProgress,
+            Action<bool> setIsIndeterminate, string sourceFile, string outputFile, CropInfo cropInfo)
+        {
+            setStatus("Converting Video");
+            setIsIndeterminate(true);
+
+            log(Environment.NewLine + Environment.NewLine + "Executing '" + FFMPEGExe + "' on '" + sourceFile + "'...");
+
+            ProcessStartInfo psi = new ProcessStartInfo(FFMPEGExe)
+            {
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                StandardErrorEncoding = Encoding.UTF8,
+                StandardOutputEncoding = Encoding.UTF8,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            psi.ArgumentList.Add("-y");
+
+            if (cropInfo.CropStart)
+            {
+                psi.ArgumentList.Add("-ss");
+                psi.ArgumentList.Add(cropInfo.Start.ToString(CultureInfo.InvariantCulture));
+            }
+
+            psi.ArgumentList.Add("-i");
+            psi.ArgumentList.Add(sourceFile);
+            psi.ArgumentList.Add("-analyzeduration");
+            psi.ArgumentList.Add(int.MaxValue.ToString(CultureInfo.InvariantCulture));
+            psi.ArgumentList.Add("-probesize");
+            psi.ArgumentList.Add(int.MaxValue.ToString(CultureInfo.InvariantCulture));
+            psi.ArgumentList.Add("-c:v");
+            psi.ArgumentList.Add("copy");
+            psi.ArgumentList.Add("-c:a");
+            psi.ArgumentList.Add("copy");
+
+            if (cropInfo.CropEnd)
+            {
+                psi.ArgumentList.Add("-t");
+                psi.ArgumentList.Add(cropInfo.Length.ToString(CultureInfo.InvariantCulture));
+            }
+
+            psi.ArgumentList.Add(outputFile);
+
+            log(Environment.NewLine + "Command line arguments: " + string.Join(" ", psi.ArgumentList) + Environment.NewLine);
+
+            using (Process p = new Process())
+            {
+                FixedSizeQueue<string> logQueue = new FixedSizeQueue<string>(200);
+
+                TimeSpan duration = TimeSpan.FromSeconds(cropInfo.Length);
+
+                DataReceivedEventHandler outputDataReceived = new DataReceivedEventHandler((s, e) =>
+                {
+                    try
+                    {
+                        if (!string.IsNullOrWhiteSpace(e.Data))
+                        {
+                            string dataTrimmed = e.Data.Trim();
+
+                            logQueue.Enqueue(dataTrimmed);
+
+                            if (dataTrimmed.StartsWith("frame", StringComparison.OrdinalIgnoreCase) &&
+                                duration != TimeSpan.Zero)
+                            {
+                                string timeStr = dataTrimmed.Substring(dataTrimmed.IndexOf("time") + 4).Trim();
+                                timeStr = timeStr.Substring(timeStr.IndexOf("=") + 1).Trim();
+                                timeStr = timeStr.Substring(0, timeStr.IndexOf(" ")).Trim();
+
+                                if (TimeSpan.TryParse(timeStr, out TimeSpan current))
+                                {
+                                    setIsIndeterminate(false);
+                                    setProgress(current.TotalMilliseconds / duration.TotalMilliseconds * 100);
+                                }
+                                else
+                                {
+                                    setIsIndeterminate(true);
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        log(Environment.NewLine + "An error occured while reading '" + FFMPEGExe + "' output stream!" +
+                            Environment.NewLine + Environment.NewLine + ex.ToString());
+                    }
+                });
+
+                p.OutputDataReceived += outputDataReceived;
+                p.ErrorDataReceived += outputDataReceived;
+                p.StartInfo = psi;
+                p.Start();
+                p.BeginErrorReadLine();
+                p.BeginOutputReadLine();
+                p.WaitForExit();
+
+                if (p.ExitCode == 0)
+                {
+                    log(Environment.NewLine + "Video conversion complete!");
+                }
+                else
+                {
+                    if (!logQueue.IsEmpty)
+                    {
+                        foreach (string line in logQueue)
+                        {
+                            log(Environment.NewLine + line);
+                        }
+                    }
+
+                    throw new ApplicationException("An error occured while converting the video!");
+                }
+            }
+        }
+
+        #endregion Methods
+    }
+}

@@ -1,5 +1,5 @@
-# Downloads the FFmpeg build that Purple Leech ships with and verifies its checksum.
-# Puts ffmpeg.exe and its license/build information into PurpleLeech/Libraries.
+# Downloads the FFmpeg build that Purple Plunder ships with and verifies its checksum.
+# Puts ffmpeg.exe and its license/build information into PurplePlunder/Libraries.
 #
 # Usage (from the repository root):  pwsh scripts/get-ffmpeg.ps1
 
@@ -11,8 +11,8 @@ $Sha256 = "b9bbbb3acece000cbeec994f856649354e52c773807841e78908374b24d658fd"
 $Url = "https://github.com/GyanD/codexffmpeg/releases/download/$Version/ffmpeg-$Version-essentials_build.zip"
 
 $Root = Split-Path -Parent $PSScriptRoot
-$Libraries = Join-Path $Root "PurpleLeech/Libraries"
-$Temp = Join-Path ([System.IO.Path]::GetTempPath()) "purpleleech-ffmpeg-$Version"
+$Libraries = Join-Path $Root "PurplePlunder/Libraries"
+$Temp = Join-Path ([System.IO.Path]::GetTempPath()) "purpleplunder-ffmpeg-$Version"
 $Zip = Join-Path $Temp "ffmpeg.zip"
 
 New-Item -ItemType Directory -Force -Path $Temp, $Libraries | Out-Null

@@ -1,0 +1,107 @@
+<UserControl x:Class="PurplePlunder.Gui.Views.MonitorView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:viewModels="clr-namespace:PurplePlunder.Gui.ViewModels"
+             xmlns:models="clr-namespace:PurplePlunder.Core.Models;assembly=PurplePlunder.Core"
+             xmlns:avalonia="https://github.com/projektanker/icons.avalonia"
+             x:DataType="viewModels:MonitorViewModel">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20" Width="600" HorizontalAlignment="Center">
+            <Border Margin="0,0,0,10" Padding="0,0,0,5" BorderThickness="0,0,0,1">
+                <TextBlock Text="Channel Monitor" FontSize="21.333" FontWeight="Bold" />
+            </Border>
+
+            <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="0,0,0,15" />
+
+            <Grid Margin="0,0,0,15">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <CheckBox Grid.Column="0" Content="Monitoring enabled" IsChecked="{Binding IsEnabled}"
+                          VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Command="{Binding CheckNowCommand}" Margin="0,0,5,0">
+                        <StackPanel Orientation="Horizontal">
+                            <avalonia:Icon Value="fa-solid fa-arrows-rotate" Width="16" Height="16" />
+                            <TextBlock Text="Check now" Margin="5,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding ShowDownloadsCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <avalonia:Icon Value="fa-solid fa-download" Width="16" Height="16" />
+                            <TextBlock Text="Downloads" Margin="5,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <Grid Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0" Text="{Binding NewChannel}" Watermark="Channel name or twitch.tv URL"
+                         IsEnabled="{Binding !IsAdding}" VerticalAlignment="Center">
+                    <TextBox.KeyBindings>
+                        <KeyBinding Gesture="Enter" Command="{Binding AddChannelCommand}" />
+                    </TextBox.KeyBindings>
+                </TextBox>
+                <Button Grid.Column="1" Command="{Binding AddChannelCommand}" IsEnabled="{Binding !IsAdding}"
+                        Margin="5,0,0,0" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <avalonia:Icon Value="fa-solid fa-plus" Width="16" Height="16" />
+                        <TextBlock Text="Add channel" Margin="5,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <TextBlock Text="No channels yet. Add one above to start monitoring."
+                       IsVisible="{Binding HasNoChannels}" Opacity="0.7" />
+
+            <ItemsControl ItemsSource="{Binding Channels}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:MonitoredChannel">
+                        <Border Margin="0,0,0,10" Padding="10" BorderThickness="1" CornerRadius="5">
+                            <Border.Background>
+                                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                    <GradientStop Color="{DynamicResource WindowBackgroundGradientTopColor}" Offset="0" />
+                                    <GradientStop Color="{DynamicResource WindowBackgroundGradientBottomColor}" Offset="1" />
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <Ellipse Grid.Row="0" Grid.Column="0" Width="10" Height="10" Margin="0,0,8,0"
+                                         VerticalAlignment="Center" Fill="#E91916" IsVisible="{Binding IsLive}" />
+                                <Ellipse Grid.Row="0" Grid.Column="0" Width="10" Height="10" Margin="0,0,8,0"
+                                         VerticalAlignment="Center" Fill="Gray" IsVisible="{Binding !IsLive}" />
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Login}" FontWeight="Bold"
+                                           VerticalAlignment="Center" />
+                                <Button Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" Classes="TlMiniButton"
+                                        Padding="5" VerticalAlignment="Center"
+                                        ToolTip.Tip="Stop monitoring this channel"
+                                        Command="{Binding $parent[ItemsControl].((viewModels:MonitorViewModel)DataContext).RemoveChannelCommand}"
+                                        CommandParameter="{Binding Login}">
+                                    <avalonia:Icon Value="fa-solid fa-trash" Width="16" Height="16" />
+                                </Button>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Margin="0,5,0,0" TextWrapping="Wrap">
+                                    <Run Text="{Binding Status}" />
+                                    <Run Text="{Binding LastChecked, StringFormat='  (checked {0:T})'}" Foreground="Gray" />
+                                </TextBlock>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
