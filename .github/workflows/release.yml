@@ -1,11 +1,12 @@
 name: Release
 
 # Push a tag like v4.1.0 to build the Windows zip and the Linux AppImage and publish them as a GitHub release.
-# Run manually from the Actions tab to just build both as workflow artifacts.
+# Pull requests and manual runs from the Actions tab only build both as workflow artifacts.
 on:
   push:
     tags:
       - "v*"
+  pull_request:
   workflow_dispatch:
 
 permissions:
