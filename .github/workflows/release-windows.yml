@@ -1,6 +1,6 @@
 name: Windows release
 
-# Push a tag like v4.0.0 to build PurpleLeech.exe and attach it to a GitHub release.
+# Push a tag like v4.0.0 to build PurplePlunder.exe and attach it to a GitHub release.
 # Run manually from the Actions tab to just build the zip as a workflow artifact.
 on:
   push:
@@ -27,7 +27,7 @@ jobs:
         shell: pwsh
         run: |
           $version = "${{ github.ref_name }}".TrimStart("v")
-          $file = "PurpleLeech/GlobalAssemblyInfo.cs"
+          $file = "PurplePlunder/GlobalAssemblyInfo.cs"
           (Get-Content $file) -replace 'AssemblyFileVersion\(".*?"\)', "AssemblyFileVersion(""$version"")" | Set-Content $file
           Get-Content $file
 
@@ -37,7 +37,7 @@ jobs:
 
       - name: Publish
         run: >
-          dotnet publish PurpleLeech/PurpleLeech/PurpleLeech.csproj
+          dotnet publish PurplePlunder/PurplePlunder/PurplePlunder.csproj
           -c Release
           -r win-x64
           --self-contained true
@@ -49,15 +49,15 @@ jobs:
       - name: Package
         shell: pwsh
         run: |
-          $name = if ("${{ github.ref_type }}" -eq "tag") { "PurpleLeech-${{ github.ref_name }}-win-x64.zip" } else { "PurpleLeech-win-x64.zip" }
+          $name = if ("${{ github.ref_type }}" -eq "tag") { "PurplePlunder-${{ github.ref_name }}-win-x64.zip" } else { "PurplePlunder-win-x64.zip" }
 
-          # License texts for Purple Leech, the bundled libraries and FFmpeg
+          # License texts for Purple Plunder, the bundled libraries and FFmpeg
           Remove-Item publish/*.pdb -ErrorAction SilentlyContinue
           New-Item -ItemType Directory -Force -Path publish/licenses | Out-Null
           Copy-Item LICENSE publish/LICENSE.txt
           Copy-Item THIRD-PARTY-NOTICES.md publish/THIRD-PARTY-NOTICES.md
           Copy-Item licenses/* publish/licenses/
-          Copy-Item PurpleLeech/Libraries/ffmpeg-LICENSE.txt, PurpleLeech/Libraries/ffmpeg-README.txt publish/licenses/
+          Copy-Item PurplePlunder/Libraries/ffmpeg-LICENSE.txt, PurplePlunder/Libraries/ffmpeg-README.txt publish/licenses/
           if (-not (Test-Path publish/ffmpeg.exe)) { throw "ffmpeg.exe is missing from the build output" }
 
           Compress-Archive -Path publish/* -DestinationPath $name
@@ -65,7 +65,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: PurpleLeech-win-x64
+          name: PurplePlunder-win-x64
           path: ${{ env.ZIP_NAME }}
 
       - name: Create release
